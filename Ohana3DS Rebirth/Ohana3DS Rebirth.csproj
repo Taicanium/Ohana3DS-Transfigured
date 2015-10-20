@@ -1,0 +1,508 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{79753E74-1271-4C63-8249-0391F761CBCC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ohana3DS_Rebirth</RootNamespace>
+    <AssemblyName>Ohana3DS Rebirth</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3DX, Version=1.0.2910.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2911.0\Microsoft.DirectX.Direct3DX.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FrmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmMain.Designer.cs">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ColorManager.cs" />
+    <Compile Include="GUI\DrawingHelper.cs" />
+    <Compile Include="GUI\OCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OCheckBox.Designer.cs">
+      <DependentUpon>OCheckBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OComboBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OComboBox.Designer.cs">
+      <DependentUpon>OComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OFloatTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OFloatTextBox.Designer.cs">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OGenericAnimationControls.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OGenericAnimationControls.Designer.cs">
+      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.Designer.cs">
+      <DependentUpon>ORadioButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.Designer.cs">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.Designer.cs">
+      <DependentUpon>OSeekBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OTextBox.Designer.cs">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OAddLightDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OAddLightDialog.Designer.cs">
+      <DependentUpon>OAddLightDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OAnimationsWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OAnimationsWindow.Designer.cs">
+      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OButton.Designer.cs">
+      <DependentUpon>OButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ODock.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\ODock.Designer.cs">
+      <DependentUpon>ODock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OCameraWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OCameraWindow.Designer.cs">
+      <DependentUpon>OCameraWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\ODockWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\ODockWindow.Designer.cs">
+      <DependentUpon>ODockWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.Designer.cs">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OHScroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OHScroll.Designer.cs">
+      <DependentUpon>OHScroll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OLabel.Designer.cs">
+      <DependentUpon>OLabel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OList.Designer.cs">
+      <DependentUpon>OList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OMenuStrip.cs" />
+    <Compile Include="GUI\OMenuStrip.Designer.cs">
+      <DependentUpon>OMenuStrip.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OLightWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OLightWindow.Designer.cs">
+      <DependentUpon>OLightWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OModelWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OModelWindow.Designer.cs">
+      <DependentUpon>OModelWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OSingleTextureWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OSingleTextureWindow.Designer.cs">
+      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OViewportWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OViewportWindow.Designer.cs">
+      <DependentUpon>OViewportWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OScrollablePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OScrollablePanel.Designer.cs">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Windows\OTextureWindow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Windows\OTextureWindow.Designer.cs">
+      <DependentUpon>OTextureWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OVScroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OVScroll.Designer.cs">
+      <DependentUpon>OVScroll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OWindowManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OWindowManager.Designer.cs">
+      <DependentUpon>OWindowManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OContainerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OContainerForm.Designer.cs">
+      <DependentUpon>OContainerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OForm.Designer.cs">
+      <DependentUpon>OForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Ohana\AnimationFormats\PK.cs" />
+    <Compile Include="Ohana\AnimationHelper.cs" />
+    <Compile Include="Ohana\ModelFormats\BCH.cs" />
+    <Compile Include="Ohana\ModelFormats\CGFX.cs" />
+    <Compile Include="Ohana\CompressionManager.cs" />
+    <Compile Include="Ohana\Compressions\LZSS.cs" />
+    <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
+    <Compile Include="Ohana\Containers\DQVIIPack.cs" />
+    <Compile Include="Ohana\Containers\FPT0.cs" />
+    <Compile Include="Ohana\Containers\GenericContainer.cs" />
+    <Compile Include="Ohana\Containers\PkmnContainer.cs" />
+    <Compile Include="Ohana\Compressions\BLZ.cs" />
+    <Compile Include="Ohana\ModelFormats\GenericFormats\OBJ.cs" />
+    <Compile Include="Ohana\TextureFormats\DMP.cs" />
+    <Compile Include="Ohana\FileIdentifier.cs" />
+    <Compile Include="Ohana\FileIO.cs" />
+    <Compile Include="Ohana\ModelFormats\GenericFormats\CMDL.cs" />
+    <Compile Include="Ohana\ModelFormats\GenericFormats\DAE.cs" />
+    <Compile Include="Ohana\ModelFormats\GenericFormats\SMD.cs" />
+    <Compile Include="Ohana\IOUtils.cs" />
+    <Compile Include="Ohana\ModelFormats\PICA200\PICACommand.cs" />
+    <Compile Include="Ohana\ModelFormats\PICA200\PICACommandReader.cs" />
+    <Compile Include="Ohana\ModelFormats\PICA200\PICACommandWriter.cs" />
+    <Compile Include="Ohana\RenderBase.cs" />
+    <Compile Include="Ohana\RenderEngine.cs" />
+    <Compile Include="Ohana\TextureCodec.cs" />
+    <Compile Include="Ohana\TextureFormats\PT.cs" />
+    <Compile Include="Ohana\TextureHelper.cs" />
+    <Compile Include="Ohana\ModelFormats\ZMDL.cs" />
+    <Compile Include="Ohana\TextureFormats\ZTEX.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FrmMain.resx">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OComboBox.resx">
+      <DependentUpon>OComboBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OFloatTextBox.resx">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OGenericAnimationControls.resx">
+      <DependentUpon>OGenericAnimationControls.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ORgbaColorBox.resx">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OTextBox.resx">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OAddLightDialog.resx">
+      <DependentUpon>OAddLightDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OAnimationsWindow.resx">
+      <DependentUpon>OAnimationsWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ODock.resx">
+      <DependentUpon>ODock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OCameraWindow.resx">
+      <DependentUpon>OCameraWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\ODockWindow.resx">
+      <DependentUpon>ODockWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OGroupBox.resx">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OList.resx">
+      <DependentUpon>OList.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OLightWindow.resx">
+      <DependentUpon>OLightWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OModelWindow.resx">
+      <DependentUpon>OModelWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OSingleTextureWindow.resx">
+      <DependentUpon>OSingleTextureWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OViewportWindow.resx">
+      <DependentUpon>OViewportWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OScrollablePanel.resx">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Windows\OTextureWindow.resx">
+      <DependentUpon>OTextureWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OContainerForm.resx">
+      <DependentUpon>OContainerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OForm.resx">
+      <DependentUpon>OForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hover_red.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hover_maximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hover_minimize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\btnmaximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\btnnormal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hover_normal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_dockable.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_locked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_up_arrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_ticked.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_scroll_left.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_wm_scroll_right.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OFragmentShader.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_collapse.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_expand.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_arrow_down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_arrow_up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_trash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_next.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_previous.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_big_pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_knob.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_bottom_scrn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_top_scrn.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_camera.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_lightbulb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_alpha_grid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icn_open.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
