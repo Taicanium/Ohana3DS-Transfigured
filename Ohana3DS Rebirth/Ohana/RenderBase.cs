@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
+using Ohana3DS_Rebirth.Ohana.ModelFormats;
+
 namespace Ohana3DS_Rebirth.Ohana
 {
     public class RenderBase

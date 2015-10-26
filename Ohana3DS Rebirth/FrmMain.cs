@@ -312,15 +312,23 @@ namespace Ohana3DS_Rebirth
 
                     if (group.model.Count > 0)
                     {
+                        args.Add(0);
+                        args.Add(0);
+                        args.Add(i);
                         FileIO.export(FileIO.fileType.model, group, args);
                     }
 
                     if (group.texture.Count > 0)
                     {
+                        args.Add(0);
+                        args.Add(0);
                         args.Add(i);
-                        args.Add(0);
-                        args.Add(0);
                         FileIO.export(FileIO.fileType.texture, group, args);
+                    }
+
+                    if (group.skeletalAnimation.list.Count > 0)
+                    {
+                        MessageBox.Show("This texture file also contains animations.");
                     }
                 }
                 catch
