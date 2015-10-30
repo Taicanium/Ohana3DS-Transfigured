@@ -60,6 +60,11 @@ namespace Ohana3DS_Rebirth.Ohana.TextureFormats
                         {
                             textures.Add(group.texture[j]);
                         }
+
+                        if (group.skeletalAnimation.list.Count > 0)
+                        {
+                            MessageBox.Show("This texture file contains skeletal animations.");
+                        }
                     }
                 }
             }

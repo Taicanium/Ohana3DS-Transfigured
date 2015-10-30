@@ -24,7 +24,28 @@ namespace Ohana3DS_Rebirth.Ohana.AnimationFormats
 
             uint fileLength;
 
-            string PKMagic = IOUtils.readString(input, 0, 2);
+            string PKMagic2 = IOUtils.readString(input, 0, 2);
+            data.Seek(0, SeekOrigin.Begin);
+            string PKMagic3 = IOUtils.readString(input, 0, 3);
+            data.Seek(0, SeekOrigin.Begin);
+
+            if (PKMagic3 == "PBJ")
+            {
+                data.Seek(4, SeekOrigin.Begin);
+                uint refCountPos = input.ReadUInt32();
+                data.Seek(refCountPos, SeekOrigin.Begin);
+            }
+            else if (PKMagic3 == "PKj")
+            {
+                data.Seek(4, SeekOrigin.Begin);
+                uint refCountPos = input.ReadUInt32();
+                data.Seek(refCountPos, SeekOrigin.Begin);
+            }
+            else
+            {
+                data.Seek(3, SeekOrigin.Begin);
+            }
+
             ushort refCount = input.ReadUInt16();
 
             data.Seek(4 + refCount * 8, SeekOrigin.Begin);
