@@ -129,6 +129,12 @@ namespace Ohana3DS_Rebirth
                             data.Close();
                             launchModel(PK.load(new MemoryStream(buffer)), name);
                             break;
+                        case "BM": // BCH container format
+                            buffer = new byte[data.Length];
+                            data.Read(buffer, 0, buffer.Length);
+                            data.Close();
+                            launchModel(PK.load(new MemoryStream(buffer)), name);
+                            break;
                     }
                     //TODO: Add windows for extra data
 

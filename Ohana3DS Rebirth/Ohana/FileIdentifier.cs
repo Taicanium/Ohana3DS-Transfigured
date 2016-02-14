@@ -78,6 +78,7 @@ namespace Ohana3DS_Rebirth.Ohana
                 case "PF":
                 case "PK":
                 case "PB":
+                case "BM":
                     return fileFormat.PkmnContainer;
             }
 

@@ -1,0 +1,29 @@
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\bin\x86\Release\Ohana3DS Rebirth.exe.config
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\bin\x86\Release\Ohana3DS Rebirth.exe
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\bin\x86\Release\Ohana3DS Rebirth.pdb
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS Rebirth.csprojResolveAssemblyReference.cache
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.FrmMain.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OComboBox.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OFloatTextBox.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OGenericAnimationControls.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.ORgbaColorBox.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OTextBox.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OAddLightDialog.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OAnimationsWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.ODock.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OCameraWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.ODockWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OGroupBox.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OList.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OLightWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OModelWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OSingleTextureWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OViewportWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OScrollablePanel.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.GUI.OTextureWindow.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.OContainerForm.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.OForm.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS_Rebirth.Properties.Resources.resources
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS Rebirth.csproj.GenerateResource.Cache
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS Rebirth.exe
+C:\Users\Caleb\Documents\Visual Studio 2013\Projects\Ohana3DS-Transfigured\Ohana3DS Rebirth\obj\x86\Release\Ohana3DS Rebirth.pdb
