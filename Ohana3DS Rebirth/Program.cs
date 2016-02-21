@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Ohana3DS_Rebirth
@@ -13,7 +14,9 @@ namespace Ohana3DS_Rebirth
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FrmMain());
+            FrmMain form = new FrmMain();
+            if (args.Length > 0 && File.Exists(args[0])) form.setFileToOpen(args[0]);
+            Application.Run(form);
         }
     }
 }

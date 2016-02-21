@@ -1,8 +1,5 @@
 ﻿//Dragon Quest VII FPT0 Container parser made by gdkchan for Ohana3DS
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Containers
@@ -21,7 +18,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// </summary>
         /// <param name="fileName">The File Name where the data is located</param>
         /// <returns></returns>
-        public static GenericContainer.OContainer load(string fileName)
+        public static OContainer load(string fileName)
         {
             return load(new FileStream(fileName, FileMode.Open));
         }
@@ -31,13 +28,12 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
         /// </summary>
         /// <param name="data">Stream with container data</param>
         /// <returns></returns>
-        public static GenericContainer.OContainer load(Stream data)
+        public static OContainer load(Stream data)
         {
             BinaryReader input = new BinaryReader(data);
-            GenericContainer.OContainer output = new GenericContainer.OContainer();
+            OContainer output = new OContainer();
 
-            output.fileIdentifier = IOUtils.readString(input, 0, 4); //FPT0 magic
-            input.ReadUInt32();
+            data.Seek(8, SeekOrigin.Begin);
             uint entries = input.ReadUInt32();
             uint baseAddress = 0x10 + (entries * 0x20) + 0x80;
             input.ReadUInt32();
@@ -59,7 +55,7 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
 
             foreach (sectionEntry file in files)
             {
-                GenericContainer.OContainerEntry entry = new GenericContainer.OContainerEntry();
+                OContainer.fileEntry entry = new OContainer.fileEntry();
 
                 data.Seek(file.offset, SeekOrigin.Begin);
                 byte[] buffer = new byte[file.length];
@@ -71,7 +67,6 @@ namespace Ohana3DS_Rebirth.Ohana.Containers
             }
 
             data.Close();
-            data.Dispose();
 
             return output;
         }

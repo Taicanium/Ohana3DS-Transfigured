@@ -1,400 +1,345 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.IO;
 
+using Ohana3DS_Rebirth.GUI;
 using Ohana3DS_Rebirth.Ohana;
-using Ohana3DS_Rebirth.Ohana.ModelFormats;
-using Ohana3DS_Rebirth.Ohana.TextureFormats;
-using Ohana3DS_Rebirth.Ohana.AnimationFormats;
+using Ohana3DS_Rebirth.Properties;
 
 namespace Ohana3DS_Rebirth
 {
     public partial class FrmMain : OForm
     {
+        bool hasFileToOpen;
+        string fileToOpen;
+
         public FrmMain()
         {
             InitializeComponent();
-            WindowManager.initialize(DockContainer);
-            MainMenu.Renderer = new GUI.OMenuStrip();
+            TopMenu.Renderer = new OMenuStrip();
+        }
+
+        private void FrmMain_Load(object sender, EventArgs e)
+        {
+            //Viewport menu settings
+            switch (Settings.Default.reAntiAlias)
+            {
+                case 0: MenuViewAANone.Checked = true; break;
+                case 2: MenuViewAA2x.Checked = true; break;
+                case 4: MenuViewAA4x.Checked = true; break;
+                case 8: MenuViewAA8x.Checked = true; break;
+                case 16: MenuViewAA16x.Checked = true; break;
+            }
+
+            MenuViewShowGuidelines.Checked = Settings.Default.reShowGuidelines;
+            MenuViewShowInformation.Checked = Settings.Default.reShowInformation;
+            MenuViewShowAllMeshes.Checked = Settings.Default.reShowAllMeshes;
+
+            MenuViewFragmentShader.Checked = Settings.Default.reFragmentShader;
+            switch (Settings.Default.reLegacyTexturingMode)
+            {
+                case 0: MenuViewTexUseFirst.Checked = true; break;
+                case 1: MenuViewTexUseLast.Checked = true; break;
+            }
+            if (MenuViewFragmentShader.Checked)
+            {
+                MenuViewTexUseFirst.Enabled = false;
+                MenuViewTexUseLast.Enabled = false;
+            }
+
+            MenuViewShowSidebar.Checked = Settings.Default.viewShowSidebar;
+            MenuViewWireframeMode.Checked = Settings.Default.reWireframeMode;
+        }
+
+        public void setFileToOpen(string fileName)
+        {
+            hasFileToOpen = true;
+            fileToOpen = fileName;
+        }
+
+        private void FrmMain_Shown(object sender, EventArgs e)
+        {
+            if (hasFileToOpen) open(fileToOpen);
+            hasFileToOpen = false;
         }
 
         private void FrmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            WindowManager.flush();
+            if (currentPanel != null) currentPanel.finalize();
         }
 
-        private void LblTitle_MouseDown(object sender, MouseEventArgs e)
-        {
-            MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
-            if (e.Button == MouseButtons.Left) MainMenu.Show(Left + LblTitle.Left, Top + LblTitle.Top + LblTitle.Height);
-        }
-
-        private void mnuAbout_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Ohana3DS Rebirth made by gdkchan. Additional modifications by Quibilia.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void mnuOpen_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openDlg = new OpenFileDialog())
-            {
-                openDlg.Filter = "All supported files|*.bch;*.cx;*.lz;*.cmp;*.mm;*.gr;*.pc;*.pack;*.fpt;*.dmp;*.rel;*.bcres;*.bcmdl;*.bctex;*.mdl;*.tex;*.pt;*.pk;*.pb;*.pf";
-                openDlg.Filter += "|Binary CTR H3D|*.bch";
-                openDlg.Filter += "|Compressed file|*.cx;*.lz;*.cmp";
-                openDlg.Filter += "|Pokémon Overworld model|*.mm";
-                openDlg.Filter += "|Pokémon Map model|*.gr";
-                openDlg.Filter += "|Pokémon Species model|*.pc";
-                openDlg.Filter += "|Pokémon Species texture|*.pt";
-                openDlg.Filter += "|Pokémon Container Type F|*.pf";
-                openDlg.Filter += "|Pokémon Container Type B|*.pb";
-                openDlg.Filter += "|Pokémon Container Type K|*.pk";
-                openDlg.Filter += "|Dragon Quest VII Package|*.pack";
-                openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
-                openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
-                openDlg.Filter += "|Forbidden Magna CGFX|*.rel";
-                openDlg.Filter += "|Binary CTR Resource|*.bcres";
-                openDlg.Filter += "|Binary CTR Model|*.bcmdl";
-                openDlg.Filter += "|Binary CTR Texture|*.bctex";
-                openDlg.Filter += "|Fantasy Life Model|*.mdl";
-                openDlg.Filter += "|Fantasy Life Texture|*.tex";
-                openDlg.Filter += "|All files|*.*";
-                if (openDlg.ShowDialog() != DialogResult.OK) return;
-                open(openDlg.FileName);
-            }
-        }
+        delegate void openFile(string fileNmame);
+        FileIO.formatType currentFormat;
+        IPanel currentPanel;
 
         public void open(string fileName)
         {
-            string name = Path.GetFileNameWithoutExtension(fileName);
-            open(new FileStream(fileName, FileMode.Open), name);
-        }
+            FileIO.file file = FileIO.load(fileName);
+            currentFormat = file.type;
 
-        public void open(Stream data, string name)
-        {
-            WindowManager.flush();
-
-            FileIdentifier.fileFormat format = FileIdentifier.identify(data);
-            if (FileIdentifier.isCompressed(format)) CompressionManager.decompress(ref data, ref format);
-
-            byte[] buffer;
-            OContainerForm containerForm;
-            switch (format)
+            if (file.type != FileIO.formatType.unsupported)
             {
-                case FileIdentifier.fileFormat.H3D:
-                    buffer = new byte[data.Length];
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(BCH.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIdentifier.fileFormat.PkmnContainer:
-                    Ohana.Containers.GenericContainer.OContainer container = Ohana.Containers.PkmnContainer.load(data);
-                    data.Seek(0, SeekOrigin.Begin);
-                    switch (container.fileIdentifier)
-                    {
-                        case "PC": //Pokémon model
-                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-                            break;
-                        case "MM": //Pokémon Overworld model
-                            launchModel(BCH.load(new MemoryStream(container.content[0].data)), name);
-                            break;
-                        case "GR": //Pokémon Map model
-                            launchModel(BCH.load(new MemoryStream(container.content[1].data)), name);
-                            break;
-                        case "PT":
-                            GUI.OTextureWindow ptTextureWindow = new GUI.OTextureWindow();
-                            ptTextureWindow.Title = name;
-                            
-                            launchWindow(ptTextureWindow);
-                            DockContainer.dockMainWindow();
-                            WindowManager.Refresh();
-                            
-                            ptTextureWindow.initialize(PT.load(data));
-                            break;
-                        case "PF":
-                            buffer = new byte[data.Length];
-                            data.Read(buffer, 0, buffer.Length);
-                            data.Close();
-                            launchModel(PK.load(new MemoryStream(buffer)), name);
-                            break;
-                        case "PK":
-                            buffer = new byte[data.Length];
-                            data.Read(buffer, 0, buffer.Length);
-                            data.Close();
-                            launchModel(PK.load(new MemoryStream(buffer)), name);
-                            break;
-                        case "PB":
-                            buffer = new byte[data.Length];
-                            data.Read(buffer, 0, buffer.Length);
-                            data.Close();
-                            launchModel(PK.load(new MemoryStream(buffer)), name);
-                            break;
-                        case "BM": // BCH container format
-                            buffer = new byte[data.Length];
-                            data.Read(buffer, 0, buffer.Length);
-                            data.Close();
-                            launchModel(PK.load(new MemoryStream(buffer)), name);
-                            break;
-                    }
-                    //TODO: Add windows for extra data
+                switch (file.type)
+                {
+                    case FileIO.formatType.container: currentPanel = new OContainerPanel(); break;
+                    case FileIO.formatType.image: currentPanel = new OImagePanel(); break;
+                    case FileIO.formatType.model: currentPanel = new OViewportPanel(); break;
+                    case FileIO.formatType.texture: currentPanel = new OTexturesPanel(); break;
+                    case FileIO.formatType.animation: currentPanel = new OAnimationsPanel(); break;
+                }
 
-                    break;
-                case FileIdentifier.fileFormat.CGFX:
-                    buffer = new byte[data.Length];
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIdentifier.fileFormat.zmdl:
-                    buffer = new byte[data.Length];
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(ZMDL.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIdentifier.fileFormat.ztex:
-                    GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-
-                    textureWindow.Title = name;
-
-                    launchWindow(textureWindow);
-                    DockContainer.dockMainWindow();
-                    WindowManager.Refresh();
-
-                    textureWindow.initialize(ZTEX.load(data));
-                    break;
-                case FileIdentifier.fileFormat.DQVIIPack:
-                    containerForm = new OContainerForm();
-                    containerForm.launch(Ohana.Containers.DQVIIPack.load(data));
-                    containerForm.Show(this);
-                    break;
-                case FileIdentifier.fileFormat.FPT0:
-                    containerForm = new OContainerForm();
-                    containerForm.launch(Ohana.Containers.FPT0.load(data));
-                    containerForm.Show(this);
-                    break;
-                case FileIdentifier.fileFormat.NLK2:
-                    buffer = new byte[data.Length - 0x80];
-                    data.Seek(0x80, SeekOrigin.Begin);
-                    data.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    launchModel(CGFX.load(new MemoryStream(buffer)), name);
-                    break;
-                case FileIdentifier.fileFormat.DMPTexture:
-                    GUI.OSingleTextureWindow singleTextureWindow = new GUI.OSingleTextureWindow();
-
-                    singleTextureWindow.Title = name;
-
-                    launchWindow(singleTextureWindow);
-                    DockContainer.dockMainWindow();
-                    WindowManager.Refresh();
-
-                    singleTextureWindow.initialize(DMP.load(data).texture);
-                    break;
-                default:
-                    MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    data.Close();
-                    break;
+                ((Control)currentPanel).Dock = DockStyle.Fill;
+                SuspendDrawing();
+                ContentContainer.Controls.Add((Control)currentPanel);
+                ContentContainer.Controls.SetChildIndex((Control)currentPanel, 0);
+                ResumeDrawing();
+                currentPanel.launch(file.data);
             }
-        }
-
-        /// <summary>
-        ///     Opens the windows used for a model.
-        ///     More windows can be opened later, for files with model and other data.
-        /// </summary>
-        /// <param name="model">The model</param>
-        /// <param name="name">The file name (without the full path and extension)</param>
-        private void launchModel(RenderBase.OModelGroup model, string name)
-        {
-            GUI.OViewportWindow viewportWindow = new GUI.OViewportWindow();
-            GUI.OModelWindow modelWindow = new GUI.OModelWindow();
-            GUI.OTextureWindow textureWindow = new GUI.OTextureWindow();
-            GUI.OLightWindow lightWindow = new GUI.OLightWindow();
-            GUI.OCameraWindow cameraWindow = new GUI.OCameraWindow();
-            GUI.OAnimationsWindow animationWindow = new GUI.OAnimationsWindow();
-
-            viewportWindow.Title = name;
-            modelWindow.Title = "Models";
-            textureWindow.Title = "Textures";
-            lightWindow.Title = "Lights";
-            cameraWindow.Title = "Cameras";
-            animationWindow.Title = "Animations";
-
-            RenderEngine renderer = new RenderEngine();
-            renderer.model = model;
-
-            launchWindow(viewportWindow);
-            DockContainer.dockMainWindow();
-            launchWindow(modelWindow, false);
-            launchWindow(textureWindow, false);
-            launchWindow(lightWindow, false);
-            launchWindow(cameraWindow, false);
-            launchWindow(animationWindow, false);
-
-            WindowManager.Refresh();
-
-            modelWindow.initialize(renderer);
-            textureWindow.initialize(renderer);
-            lightWindow.initialize(renderer);
-            cameraWindow.initialize(renderer);
-            animationWindow.initialize(renderer);
-            viewportWindow.initialize(renderer);
-        }
-
-        private void launchWindow(GUI.ODockWindow window, bool visible = true)
-        {
-            window.Visible = visible;
-            DockContainer.launch(window);
-            WindowManager.addWindow(window);
+            else
+                MessageBox.Show("Unsupported file format!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
 
         private void FrmMain_DragDrop(object sender, DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            System.Collections.Generic.List<int> args;
-            RenderBase.OModelGroup group;
-            Ohana.Containers.GenericContainer.OContainer container;
-            RenderBase.OModelGroup tempGroup;
-            FileIdentifier.fileFormat fmt;
-            byte[] outBuf;
-            Stream outStr;
-            Stream str;
-            int currentChar = 0;
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                args = new System.Collections.Generic.List<int>();
-                group = new RenderBase.OModelGroup();
-
-                try
-                {
-                    if (files[i].Contains(".pc"))
-                    {
-                        container = Ohana.Containers.PkmnContainer.load(files[i]);
-
-                        for (int j = 0; j < container.content.Count; j++)
-                        {
-                            tempGroup = BCH.load(new MemoryStream(container.content[0].data));
-
-                            for (int k = 0; k < tempGroup.model.Count; k++)
-                            {
-                                group.addModel(tempGroup.model[k]);
-                            }
-
-                            for (int k = 0; k < tempGroup.texture.Count; k++)
-                            {
-                                group.addTexture(tempGroup.texture[k]);
-                            }
-
-                            for (int k = 0; k < tempGroup.materialAnimation.list.Count; k++)
-                            {
-                                group.addMaterialAnimation((RenderBase.OMaterialAnimation)tempGroup.materialAnimation.list[k]);
-                            }
-
-                            for (int k = 0; k < tempGroup.visibilityAnimation.list.Count; k++)
-                            {
-                                group.addVisibilityAnimation((RenderBase.OVisibilityAnimation)tempGroup.visibilityAnimation.list[k]);
-                            }
-
-                            for (int k = 0; k < tempGroup.skeletalAnimation.list.Count; k++)
-                            {
-                                group.addSkeletalAnimaton((RenderBase.OSkeletalAnimation)tempGroup.skeletalAnimation.list[k]);
-                            }
-                        }
-
-                        currentChar++;
-                    }
-                    else if (files[i].Contains(".pt"))
-                    {
-                        group.texture = PT.load(files[i]);
-                    }
-                    else if (files[i].Contains(".pk"))
-                    {
-                        group.visibilityAnimation = PK.load(files[i]).visibilityAnimation;
-                        group.skeletalAnimation = PK.load(files[i]).skeletalAnimation;
-                        group.materialAnimation = PK.load(files[i]).materialAnimation;
-                    }
-                    else if (files[i].Contains(".pb"))
-                    {
-                        group.materialAnimation = PK.load(files[i]).materialAnimation;
-                        group.visibilityAnimation = PK.load(files[i]).visibilityAnimation;
-                        group.skeletalAnimation = PK.load(files[i]).skeletalAnimation;
-                    }
-                    else if (files[i].Contains(".pf"))
-                    {
-                        group.skeletalAnimation = PK.load(files[i]).skeletalAnimation;
-                        group.materialAnimation = PK.load(files[i]).materialAnimation;
-                        group.visibilityAnimation = PK.load(files[i]).visibilityAnimation;
-                    }
-                    else if (files[i].Contains(".lz"))
-                    {
-                        fmt = FileIdentifier.fileFormat.LZSSCompressed;
-                        str = new FileStream(files[i], FileMode.OpenOrCreate);
-
-                        CompressionManager.decompress(ref str, ref fmt);
-
-                        outStr = new FileStream(files[i] + ".pk", FileMode.OpenOrCreate);
-
-                        outBuf = new byte[str.Length];
-                        str.Read(outBuf, 0, (int)outBuf.Length);
-                        str.Close();
-
-                        outStr.Write(outBuf, 0, (int)outBuf.Length);
-
-                        outStr.Close();
-                    }
-                    else if (files[i].Contains(".CGFX"))
-                    {
-                        group.visibilityAnimation = CGFX.load(files[i]).visibilityAnimation;
-                        group.skeletalAnimation = CGFX.load(files[i]).skeletalAnimation;
-                        group.materialAnimation = CGFX.load(files[i]).materialAnimation;
-                    }
-                    else
-                    {
-                        group = BCH.load(files[i]);
-                    }
-
-                    if (group.model.Count > 0)
-                    {
-                        args.Add(0);
-                        args.Add(0);
-                        args.Add(currentChar);
-                        FileIO.export(FileIO.fileType.model, group, args);
-                    }
-
-                    if (group.texture.Count > 0)
-                    {
-                        if (args.Count < 3)
-                        {
-                            args.Add(0);
-                            args.Add(0);
-                            args.Add(currentChar);
-                        }
-
-                        FileIO.export(FileIO.fileType.texture, group, args);
-                    }
-
-                    if (group.skeletalAnimation.list.Count > 0)
-                    {
-                        MessageBox.Show("This file contains skeletal animations.");
-                    }
-                }
-                catch
-                {
-                }
-            }
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
         private void FrmMain_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (files.Length > 0)
             {
-                e.Effect = DragDropEffects.Copy;
+                destroyOpenPanels();
+                openFile openFileDelegate = new openFile(open);
+                BeginInvoke(openFileDelegate, files[0]);
+                Activate();
             }
         }
 
-        private void DockContainer_Click(object sender, EventArgs e)
+        private void destroyOpenPanels()
         {
-
+            if (currentPanel != null)
+            {
+                currentPanel.finalize();
+                ContentContainer.Controls.Remove((Control)currentPanel);
+            }
         }
+
+        #region "Menus"
+        /*
+         * File
+         */
+
+        //Open
+
+        private void MenuOpen_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openDlg = new OpenFileDialog())
+            {
+                openDlg.Filter = "All files|*.*";
+                if (openDlg.ShowDialog() == DialogResult.OK)
+                {
+                    destroyOpenPanels();
+                    open(openDlg.FileName);
+                }
+            }
+        }
+
+        /*
+         * Options -> Viewport
+         */
+
+        //Anti Aliasing
+
+        private void MenuViewAANone_Click(object sender, EventArgs e)
+        {
+            setAACheckBox((ToolStripMenuItem)sender, 0);
+        }
+
+        private void MenuViewAA2x_Click(object sender, EventArgs e)
+        {
+            setAACheckBox((ToolStripMenuItem)sender, 2);
+        }
+
+        private void MenuViewAA4x_Click(object sender, EventArgs e)
+        {
+            setAACheckBox((ToolStripMenuItem)sender, 4);
+        }
+
+        private void MenuViewAA8x_Click(object sender, EventArgs e)
+        {
+            setAACheckBox((ToolStripMenuItem)sender, 8);
+        }
+
+        private void MenuViewAA16x_Click(object sender, EventArgs e)
+        {
+            setAACheckBox((ToolStripMenuItem)sender, 16);
+        }
+
+        private void setAACheckBox(ToolStripMenuItem control, int value)
+        {
+            MenuViewAANone.Checked = false;
+            MenuViewAA2x.Checked = false;
+            MenuViewAA4x.Checked = false;
+            MenuViewAA8x.Checked = false;
+            MenuViewAA16x.Checked = false;
+
+            control.Checked = true;
+            Settings.Default.reAntiAlias = value;
+            Settings.Default.Save();
+            updateViewportSettings();
+            changesNeedsRestart();
+        }
+
+        //Background
+
+        private void MenuViewBgBlack_Click(object sender, EventArgs e)
+        {
+            setViewportBgColor(Color.Black.ToArgb());
+        }
+
+        private void MenuViewBgGray_Click(object sender, EventArgs e)
+        {
+            setViewportBgColor(Color.DimGray.ToArgb());
+        }
+
+        private void MenuViewBgWhite_Click(object sender, EventArgs e)
+        {
+            setViewportBgColor(Color.White.ToArgb());
+        }
+
+        private void MenuViewBgCustom_Click(object sender, EventArgs e)
+        {
+            using (ColorDialog colorDlg = new ColorDialog())
+            {
+                if (colorDlg.ShowDialog() == DialogResult.OK) setViewportBgColor(colorDlg.Color.ToArgb());
+            }
+        }
+
+        private void setViewportBgColor(int color)
+        {
+            Settings.Default.reBackgroundColor = color;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        //Show/hide
+
+        private void MenuViewShowGuidelines_Click(object sender, EventArgs e)
+        {
+            MenuViewShowGuidelines.Checked = !MenuViewShowGuidelines.Checked;
+            Settings.Default.reShowGuidelines = MenuViewShowGuidelines.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        private void MenuViewShowInformation_Click(object sender, EventArgs e)
+        {
+            MenuViewShowInformation.Checked = !MenuViewShowInformation.Checked;
+            Settings.Default.reShowInformation = MenuViewShowInformation.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        private void MenuViewShowAllMeshes_Click(object sender, EventArgs e)
+        {
+            MenuViewShowAllMeshes.Checked = !MenuViewShowAllMeshes.Checked;
+            Settings.Default.reShowAllMeshes = MenuViewShowAllMeshes.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        //Texturing
+
+        private void MenuViewFragmentShader_Click(object sender, EventArgs e)
+        {
+            MenuViewFragmentShader.Checked = !MenuViewFragmentShader.Checked;
+
+            if (MenuViewFragmentShader.Checked)
+            {
+                MenuViewTexUseFirst.Enabled = false;
+                MenuViewTexUseLast.Enabled = false;
+            }
+            else
+            {
+                MenuViewTexUseFirst.Enabled = true;
+                MenuViewTexUseLast.Enabled = true;
+            }
+
+            Settings.Default.reFragmentShader = MenuViewFragmentShader.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+            changesNeedsRestart();
+        }
+
+        private void MenuViewTexUseFirst_Click(object sender, EventArgs e)
+        {
+            MenuViewTexUseFirst.Checked = true;
+            MenuViewTexUseLast.Checked = false;
+            Settings.Default.reLegacyTexturingMode = 0;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        private void MenuViewTexUseLast_Click(object sender, EventArgs e)
+        {
+            MenuViewTexUseFirst.Checked = false;
+            MenuViewTexUseLast.Checked = true;
+            Settings.Default.reLegacyTexturingMode = 1;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        //Misc. UI
+
+        private void MenuViewShowSidebar_Click(object sender, EventArgs e)
+        {
+            MenuViewShowSidebar.Checked = !MenuViewShowSidebar.Checked;
+            Settings.Default.viewShowSidebar = MenuViewShowSidebar.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        private void MenuViewWireframeMode_Click(object sender, EventArgs e)
+        {
+            MenuViewWireframeMode.Checked = !MenuViewWireframeMode.Checked;
+            Settings.Default.reWireframeMode = MenuViewWireframeMode.Checked;
+            Settings.Default.Save();
+            updateViewportSettings();
+        }
+
+        private void updateViewportSettings()
+        {
+            if (currentFormat == FileIO.formatType.model)
+            {
+                OViewportPanel viewport = (OViewportPanel)currentPanel;
+                viewport.renderer.updateSettings();
+                viewport.ShowSidebar = MenuViewShowSidebar.Checked;
+            }
+        }
+
+        private void changesNeedsRestart()
+        {
+            if (currentFormat == FileIO.formatType.model)
+            {
+                MessageBox.Show(
+                    "Please restart the rendering engine to make those changes take effect!",
+                    "Information",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+
+        /*
+         * Help
+         */
+
+        //About
+
+        private void MenuAbout_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Ohana3DS Rebirth made by gdkchan.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        #endregion
     }
 }

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-
-using Ohana3DS_Rebirth.Ohana.ModelFormats;
 
 namespace Ohana3DS_Rebirth.Ohana
 {
@@ -45,6 +44,16 @@ namespace Ohana3DS_Rebirth.Ohana
             {
             }
 
+            /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
+            }
+
             public override bool Equals(object obj)
             {
                 if (obj == null) return false;
@@ -70,7 +79,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}", x, y);
+                return string.Format("X:{0}; Y:{1}", x, y);
             }
         }
 
@@ -115,6 +124,17 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
+                output.Write(z);
+            }
+
+            /// <summary>
             ///     Transform the 3-D Vector with a matrix.
             /// </summary>
             /// <param name="input">Input vector</param>
@@ -156,7 +176,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
+                return string.Format("X:{0}; Y:{1}; Z:{2}", x, y, z);
             }
         }
 
@@ -204,6 +224,18 @@ namespace Ohana3DS_Rebirth.Ohana
             {
             }
 
+            /// <summary>
+            ///     Writes the Vector to a Stream using a BinaryWriter.
+            /// </summary>
+            /// <param name="output">The Writer of the output Stream</param>
+            public void write(BinaryWriter output)
+            {
+                output.Write(x);
+                output.Write(y);
+                output.Write(z);
+                output.Write(w);
+            }
+
             public override bool Equals(object obj)
             {
                 if (obj == null) return false;
@@ -233,7 +265,7 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public override string ToString()
             {
-                return String.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
+                return string.Format("X:{0}; Y:{1}; Z:{2}; W:{3}", x, y, z, w);
             }
         }
 
@@ -306,25 +338,6 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Add a Node to the Vertex.
-            ///     It may contain multiple nodes, and each node must be the Id of a Bone on the Skeleton.
-            /// </summary>
-            /// <param name="_node"></param>
-            public void addNode(int _node)
-            {
-                node.Add(_node);
-            }
-
-            /// <summary>
-            ///     Add Weighting information of the Vertex.
-            /// </summary>
-            /// <param name="_weight"></param>
-            public void addWeight(float _weight)
-            {
-                weight.Add(_weight);
-            }
-
-            /// <summary>
             ///     Checks if two vertex are equal by comparing each element.
             /// </summary>
             /// <param name="vertex">Vertex to compare</param>
@@ -341,48 +354,6 @@ namespace Ohana3DS_Rebirth.Ohana
                        weight.SequenceEqual(vertex.weight) &&
                        diffuseColor == vertex.diffuseColor;
             }
-        }
-
-        public struct CustomVertex
-        {
-            public float x, y, z;
-            public float nx, ny, nz;
-            public uint color;
-            public float u0, v0;
-            public float u1, v1;
-            public float u2, v2;
-        }
-
-        /// <summary>
-        ///     Converts OVertex to CustomVertex.
-        ///     A CustomVertex buffer can be directly passed to the renderer.
-        /// </summary>
-        /// <param name="input">The OVertex to be converted</param>
-        /// <returns>The CustomVertex</returns>
-        public static CustomVertex convertVertex(OVertex input)
-        {
-            CustomVertex vertex;
-
-            vertex.x = input.position.x;
-            vertex.y = input.position.y;
-            vertex.z = input.position.z;
-
-            vertex.nx = input.normal.x;
-            vertex.ny = input.normal.y;
-            vertex.nz = input.normal.z;
-
-            vertex.u0 = input.texture0.x;
-            vertex.v0 = input.texture0.y;
-
-            vertex.u1 = input.texture1.x;
-            vertex.v1 = input.texture1.y;
-
-            vertex.u2 = input.texture2.x;
-            vertex.v2 = input.texture2.y;
-
-            vertex.color = input.diffuseColor;
-
-            return vertex;
         }
 
         /// <summary>
@@ -422,6 +393,18 @@ namespace Ohana3DS_Rebirth.Ohana
             public float M43 { get { return matrix[3, 2]; } set { matrix[3, 2] = value; } }
             public float M44 { get { return matrix[3, 3]; } set { matrix[3, 3] = value; } }
 
+            public float this[int col, int row]
+            {
+                get
+                {
+                    return matrix[col, row];
+                }
+                set
+                {
+                    matrix[col, row] = value;
+                }
+            }
+
             public static OMatrix operator *(OMatrix a, OMatrix b)
             {
                 OMatrix c = new OMatrix();
@@ -433,9 +416,9 @@ namespace Ohana3DS_Rebirth.Ohana
                         float sum = 0;
                         for (int k = 0; k < 4; k++)
                         {
-                            sum += a.matrix[i, k] * b.matrix[k, j];
+                            sum += a[i, k] * b[k, j];
                         }
-                        c.matrix[i, j] = sum;
+                        c[i, j] = sum;
                     }
                 }
 
@@ -525,7 +508,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a scaling Matrix with a given proportion size.
+            ///     Creates a scaling Matrix with a given 3-D proportion size.
             /// </summary>
             /// <param name="scale">The Scale proportions</param>
             /// <returns></returns>
@@ -536,6 +519,22 @@ namespace Ohana3DS_Rebirth.Ohana
                     M11 = scale.x, 
                     M22 = scale.y, 
                     M33 = scale.z
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a scaling Matrix with a given 2-D proportion size.
+            /// </summary>
+            /// <param name="scale">The Scale proportions</param>
+            /// <returns></returns>
+            public static OMatrix scale(OVector2 scale)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M11 = scale.x,
+                    M22 = scale.y
                 };
 
                 return output;
@@ -613,7 +612,7 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a translation Matrix with the given position offset.
+            ///     Creates a translation Matrix with the given 3-D position offset.
             /// </summary>
             /// <param name="position">The Position offset</param>
             /// <returns></returns>
@@ -624,6 +623,22 @@ namespace Ohana3DS_Rebirth.Ohana
                     M41 = position.x, 
                     M42 = position.y, 
                     M43 = position.z
+                };
+
+                return output;
+            }
+
+            /// <summary>
+            ///     Creates a translation Matrix with the given 2-D position offset.
+            /// </summary>
+            /// <param name="position">The Position offset</param>
+            /// <returns></returns>
+            public static OMatrix translate(OVector2 position)
+            {
+                OMatrix output = new OMatrix
+                {
+                    M31 = position.x,
+                    M32 = position.y
                 };
 
                 return output;
@@ -672,10 +687,9 @@ namespace Ohana3DS_Rebirth.Ohana
         ///     Mesh of a model. A model is usually composed of several meshes.
         ///     For example, a human character may have one mesh for the head, other for the body, other for members and so on...
         /// </summary>
-        public class OModelObject
+        public class OMesh
         {
-            public List<OVertex> obj;
-            public CustomVertex[] renderBuffer;
+            public List<OVertex> vertices;
             public ushort materialId;
             public ushort renderPriority;
             public string name;
@@ -689,29 +703,11 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool hasWeight;
             public int texUVCount;
 
-            public OModelObject()
+            public OMesh()
             {
-                obj = new List<OVertex>();
+                vertices = new List<OVertex>();
                 boundingBox = new List<OOrientedBoundingBox>();
                 isVisible = true;
-            }
-
-            /// <summary>
-            ///     Adds a new Vertex to the Object.
-            /// </summary>
-            /// <param name="vertex">The Vertex</param>
-            public void addVertex(OVertex vertex)
-            {
-                obj.Add(vertex);
-            }
-
-            /// <summary>
-            ///     Adds a new Bounding Box to the Object.
-            /// </summary>
-            /// <param name="bBox">The Bounding Box</param>
-            public void addBoundingBox(OOrientedBoundingBox bBox)
-            {
-                boundingBox.Add(bBox);
             }
         }
 
@@ -1028,6 +1024,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// </summary>
         public struct OFragmentSampler
         {
+            public bool isAbsolute;
             public OFragmentSamplerInput input;
             public OFragmentSamplerScale scale;
             public string samplerName;
@@ -1249,6 +1246,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OBlendOperation blend;
             public OStencilOperation stencil;
         }
+
         /// <summary>
         ///     The input format is the following: Id@Name.
         ///     The Id is used to choose data inside the group "Name", Id can be another name or an index.
@@ -1333,6 +1331,31 @@ namespace Ohana3DS_Rebirth.Ohana
                 textureCoordinator = new OTextureCoordinator[3];
                 textureMapper = new OTextureMapper[3];
                 fragmentShader = new OFragmentShader();
+
+                name = "material";
+
+                fragmentShader.alphaTest.isTestEnabled = true;
+                fragmentShader.alphaTest.testFunction = OTestFunction.greater;
+
+                textureMapper[0].wrapU = OTextureWrap.repeat;
+                textureMapper[0].wrapV = OTextureWrap.repeat;
+
+                textureMapper[0].minFilter = OTextureMinFilter.linearMipmapLinear;
+                textureMapper[0].magFilter = OTextureMagFilter.linear;
+
+                for (int i = 0; i < 6; i++)
+                {
+                    fragmentShader.textureCombiner[i].rgbSource[0] = OCombineSource.texture0;
+                    fragmentShader.textureCombiner[i].rgbSource[1] = OCombineSource.primaryColor;
+                    fragmentShader.textureCombiner[i].combineRgb = OCombineOperator.modulate;
+                    fragmentShader.textureCombiner[i].alphaSource[0] = OCombineSource.texture0;
+                    fragmentShader.textureCombiner[i].rgbScale = 1;
+                    fragmentShader.textureCombiner[i].alphaScale = 1;
+                }
+
+                fragmentOperation.depth.isTestEnabled = true;
+                fragmentOperation.depth.testFunction = OTestFunction.lessOrEqual;
+                fragmentOperation.depth.isMaskEnabled = true;
             }
         }
 
@@ -1358,11 +1381,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMetaDataValueType type;
-            public List<Object> values;
+            public List<object> values;
 
             public OMetaData()
             {
-                values = new List<Object>();
+                values = new List<object>();
             }
         }
 
@@ -1383,48 +1406,55 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public uint layerId;
-            public List<OModelObject> modelObject;
+            public List<OMesh> mesh;
             public List<OBone> skeleton;
             public List<OMaterial> material;
             public List<OMetaData> userData;
             public OMatrix transform;
-            public float height;
+
+            public OVector3 minVector, maxVector;
+            public int verticesCount
+            {
+                get
+                {
+                    int count = 0;
+                    foreach (RenderBase.OMesh obj in mesh) count += obj.vertices.Count;
+                    return count;
+                }
+            }
 
             public OModel()
             {
-                modelObject = new List<OModelObject>();
+                mesh = new List<OMesh>();
                 skeleton = new List<OBone>();
                 material = new List<OMaterial>();
                 userData = new List<OMetaData>();
-                transform = new RenderBase.OMatrix();
+                transform = new OMatrix();
+                minVector = new OVector3();
+                maxVector = new OVector3();
             }
+        }
 
-            /// <summary>
-            ///     Adds a Object to the model.
-            /// </summary>
-            /// <param name="obj">The Object</param>
-            public void addObject(OModelObject obj)
-            {
-                modelObject.Add(obj);
-            }
-
-            /// <summary>
-            ///     Adds a Bone to the skeleton.
-            /// </summary>
-            /// <param name="bone">The Bone</param>
-            public void addBone(OBone bone)
-            {
-                skeleton.Add(bone);
-            }
-
-            /// <summary>
-            ///     Adds a Material to the model.
-            /// </summary>
-            /// <param name="mat">The Material</param>
-            public void addMaterial(OMaterial mat)
-            {
-                material.Add(mat);
-            }
+        /// <summary>
+        ///     Format of the texture used on the PICA200.
+        /// </summary>
+        public enum OTextureFormat
+        {
+            rgba8 = 0,
+            rgb8 = 1,
+            rgba5551 = 2,
+            rgb565 = 3,
+            rgba4 = 4,
+            la8 = 5,
+            hilo8 = 6,
+            l8 = 7,
+            a8 = 8,
+            la4 = 9,
+            l4 = 0xa,
+            a4 = 0xb,
+            etc1 = 0xc,
+            etc1a4 = 0xd,
+            dontCare
         }
 
         /// <summary>
@@ -1433,14 +1463,14 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OTexture
         {
             public Bitmap texture;
-            public String name;
+            public string name;
 
             /// <summary>
             ///     Creates a new Texture.
             /// </summary>
             /// <param name="_texture">The texture, size must be a power of 2</param>
             /// <param name="_name">Texture name</param>
-            public OTexture(Bitmap _texture, String _name)
+            public OTexture(Bitmap _texture, string _name)
             {
                 texture = new Bitmap(_texture);
                 _texture.Dispose();
@@ -1628,7 +1658,7 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <summary>
         ///     Value used on each Frame element of the animation
         /// </summary>
-        public class OInterpolationFloat
+        public class OAnimationKeyFrame
         {
             public float frame;
             public float value;
@@ -1637,14 +1667,14 @@ namespace Ohana3DS_Rebirth.Ohana
             public bool bValue;
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Hermite Interpolation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Hermite Interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_inSlope">The input slope</param>
             /// <param name="_outSlope">The output slope</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(float _value, float _inSlope, float _outSlope, float _frame)
+            public OAnimationKeyFrame(float _value, float _inSlope, float _outSlope, float _frame)
             {
                 value = _value;
                 inSlope = _inSlope;
@@ -1653,39 +1683,39 @@ namespace Ohana3DS_Rebirth.Ohana
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Linear or Step interpolation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Linear or Step interpolation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(float _value, float _frame)
+            public OAnimationKeyFrame(float _value, float _frame)
             {
                 value = _value;
                 frame = _frame;
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
-            ///     This Interpolation Float can be used on Boolean values animation.
+            ///     Creates a new Key Frame.
+            ///     This Key Frame can be used on Boolean values animation.
             /// </summary>
             /// <param name="_value">The point value</param>
             /// <param name="_frame">The frame number</param>
-            public OInterpolationFloat(bool _value, float _frame)
+            public OAnimationKeyFrame(bool _value, float _frame)
             {
                 bValue = _value;
                 frame = _frame;
             }
 
             /// <summary>
-            ///     Creates a new Interpolation Float.
+            ///     Creates a new Key Frame.
             /// </summary>
-            public OInterpolationFloat()
+            public OAnimationKeyFrame()
             {
             }
 
             public override string ToString()
             {
-                return String.Format("Frame:{0}; Value (float):{1}; Value (boolean):{2}; InSlope:{3}; OutSlope:{4}", frame, value, bValue, inSlope, outSlope);
+                return string.Format("Frame:{0}; Value (float):{1}; Value (boolean):{2}; InSlope:{3}; OutSlope:{4}", frame, value, bValue, inSlope, outSlope);
             }
         }
 
@@ -1705,9 +1735,9 @@ namespace Ohana3DS_Rebirth.Ohana
         /// <summary>
         ///     Key frame of an animation.
         /// </summary>
-        public class OAnimationKeyFrame
+        public class OAnimationKeyFrameGroup
         {
-            public List<OInterpolationFloat> keyFrames;
+            public List<OAnimationKeyFrame> keyFrames;
             public OInterpolationMode interpolation;
             public float startFrame, endFrame;
             public bool exists;
@@ -1716,9 +1746,9 @@ namespace Ohana3DS_Rebirth.Ohana
             public ORepeatMethod preRepeat;
             public ORepeatMethod postRepeat;
 
-            public OAnimationKeyFrame()
+            public OAnimationKeyFrameGroup()
             {
-                keyFrames = new List<OInterpolationFloat>();
+                keyFrames = new List<OAnimationKeyFrame>();
             }
         }
 
@@ -1757,14 +1787,28 @@ namespace Ohana3DS_Rebirth.Ohana
         }
 
         /// <summary>
+        ///     Type of the segment quantization.
+        /// </summary>
+        public enum OSegmentQuantization
+        {
+            hermite128 = 0,
+            hermite64 = 1,
+            hermite48 = 2,
+            unifiedHermite96 = 3,
+            unifiedHermite48 = 4,
+            unifiedHermite32 = 5,
+            stepLinear64 = 6,
+            stepLinear32 = 7
+        }
+
+        /// <summary>
         ///     Bone of an Skeletal Animation.
         /// </summary>
         public class OSkeletalAnimationBone
         {
             public string name;
-            public OAnimationKeyFrame rotationX, rotationY, rotationZ;
-            public OAnimationKeyFrame translationX, translationY, translationZ;
-            public bool rotationExists, translationExists;
+            public OAnimationKeyFrameGroup rotationX, rotationY, rotationZ;
+            public OAnimationKeyFrameGroup translationX, translationY, translationZ;
 
             public OAnimationFrame rotationQuaternion;
             public OAnimationFrame translation;
@@ -1775,12 +1819,12 @@ namespace Ohana3DS_Rebirth.Ohana
 
             public OSkeletalAnimationBone()
             {
-                rotationX = new OAnimationKeyFrame();
-                rotationY = new OAnimationKeyFrame();
-                rotationZ = new OAnimationKeyFrame();
-                translationX = new OAnimationKeyFrame();
-                translationY = new OAnimationKeyFrame();
-                translationZ = new OAnimationKeyFrame();
+                rotationX = new OAnimationKeyFrameGroup();
+                rotationY = new OAnimationKeyFrameGroup();
+                rotationZ = new OAnimationKeyFrameGroup();
+                translationX = new OAnimationKeyFrameGroup();
+                translationY = new OAnimationKeyFrameGroup();
+                translationZ = new OAnimationKeyFrameGroup();
 
                 rotationQuaternion = new OAnimationFrame();
                 translation = new OAnimationFrame();
@@ -1883,11 +1927,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OMaterialAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OMaterialAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -1915,11 +1959,11 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OVisibilityAnimationData
         {
             public string name;
-            public OAnimationKeyFrame visibilityList;
+            public OAnimationKeyFrameGroup visibilityList;
 
             public OVisibilityAnimationData()
             {
-                visibilityList = new OAnimationKeyFrame();
+                visibilityList = new OAnimationKeyFrameGroup();
             }
         }
 
@@ -1962,11 +2006,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OLightAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OLightAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -2012,11 +2056,11 @@ namespace Ohana3DS_Rebirth.Ohana
         {
             public string name;
             public OCameraAnimationType type;
-            public List<OAnimationKeyFrame> frameList;
+            public List<OAnimationKeyFrameGroup> frameList;
 
             public OCameraAnimationData()
             {
-                frameList = new List<OAnimationKeyFrame>();
+                frameList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -2044,11 +2088,11 @@ namespace Ohana3DS_Rebirth.Ohana
         public class OFogAnimationData
         {
             public string name;
-            public List<OAnimationKeyFrame> colorList;
+            public List<OAnimationKeyFrameGroup> colorList;
 
             public OFogAnimationData()
             {
-                colorList = new List<OAnimationKeyFrame>();
+                colorList = new List<OAnimationKeyFrameGroup>();
             }
         }
 
@@ -2114,8 +2158,7 @@ namespace Ohana3DS_Rebirth.Ohana
             public OAnimationListBase cameraAnimation;
             public OAnimationListBase fogAnimation;
             public List<OScene> scene;
-            public OVector3 minVector, maxVector;
-
+            
             public OModelGroup()
             {
                 model = new List<OModel>();
@@ -2131,125 +2174,27 @@ namespace Ohana3DS_Rebirth.Ohana
                 cameraAnimation = new OAnimationListBase();
                 fogAnimation = new OAnimationListBase();
                 scene = new List<OScene>();
-                minVector = new OVector3();
-                maxVector = new OVector3();
             }
 
             /// <summary>
-            ///     Adds a new Model.
+            ///     Merges all the content of a ModelGroup with this ModelGroup.
             /// </summary>
-            /// <param name="_model">The Model</param>
-            public void addModel(OModel _model)
+            /// <param name="data">The contents to be merged</param>
+            public void merge(OModelGroup data)
             {
-                model.Add(_model);
-            }
-
-            /// <summary>
-            ///     Adds a new Texture.
-            /// </summary>
-            /// <param name="_texture">The Texture</param>
-            public void addTexture(OTexture _texture)
-            {
-                texture.Add(_texture);
-            }
-
-            /// <summary>
-            ///     Adds a new LookUp Table.
-            /// </summary>
-            /// <param name="_lookUpTable">The LUT</param>
-            public void addLUT(OLookUpTable _lookUpTable)
-            {
-                lookUpTable.Add(_lookUpTable);
-            }
-
-            /// <summary>
-            ///     Adds a new Light.
-            /// </summary>
-            /// <param name="_light">The Light</param>
-            public void addLight(OLight _light)
-            {
-                light.Add(_light);
-            }
-
-            /// <summary>
-            ///     Adds a new Camera.
-            /// </summary>
-            /// <param name="_camera">The Camera</param>
-            public void addCamera(OCamera _camera)
-            {
-                camera.Add(_camera);
-            }
-
-            /// <summary>
-            ///     Adds a new Fog.
-            /// </summary>
-            /// <param name="_fog">The Fog</param>
-            public void addFog(OFog _fog)
-            {
-                fog.Add(_fog);
-            }
-
-            /// <summary>
-            ///     Adds a new Skeletal Animation.
-            /// </summary>
-            /// <param name="_skeletalAnimation">The Skeletal Animation</param>
-            public void addSkeletalAnimaton(OSkeletalAnimation _skeletalAnimation)
-            {
-                skeletalAnimation.list.Add(_skeletalAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Material Animation.
-            /// </summary>
-            /// <param name="_materialColorAnimation">The Material Animation</param>
-            public void addMaterialAnimation(OMaterialAnimation _materialAnimation)
-            {
-                materialAnimation.list.Add(_materialAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Visibility Animation.
-            /// </summary>
-            /// <param name="_visibilityAnimation">The Visibility Animation</param>
-            public void addVisibilityAnimation(OVisibilityAnimation _visibilityAnimation)
-            {
-                visibilityAnimation.list.Add(_visibilityAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Light Animation.
-            /// </summary>
-            /// <param name="_lightAnimation">The Light Animation</param>
-            public void addLightAnimation(OLightAnimation _lightAnimation)
-            {
-                lightAnimation.list.Add(_lightAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Camera Animation.
-            /// </summary>
-            /// <param name="_cameraAnimation">The Camera Animation</param>
-            public void addCameraAnimation(OCameraAnimation _cameraAnimation)
-            {
-                cameraAnimation.list.Add(_cameraAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Fog Animation.
-            /// </summary>
-            /// <param name="_fogAnimation">The Fog Animation</param>
-            public void addFogAnimation(OFogAnimation _fogAnimation)
-            {
-                fogAnimation.list.Add(_fogAnimation);
-            }
-
-            /// <summary>
-            ///     Adds a new Scene Environment.
-            /// </summary>
-            /// <param name="_scene">The Scene Environment</param>
-            public void addScene(OScene _scene)
-            {
-                scene.Add(_scene);
+                model.AddRange(data.model);
+                texture.AddRange(data.texture);
+                lookUpTable.AddRange(data.lookUpTable);
+                light.AddRange(data.light);
+                camera.AddRange(data.camera);
+                fog.AddRange(data.fog);
+                skeletalAnimation.list.AddRange(data.skeletalAnimation.list);
+                materialAnimation.list.AddRange(data.materialAnimation.list);
+                visibilityAnimation.list.AddRange(data.visibilityAnimation.list);
+                lightAnimation.list.AddRange(data.lightAnimation.list);
+                cameraAnimation.list.AddRange(data.cameraAnimation.list);
+                fogAnimation.list.AddRange(data.fogAnimation.list);
+                scene.AddRange(data.scene);
             }
         }
     }

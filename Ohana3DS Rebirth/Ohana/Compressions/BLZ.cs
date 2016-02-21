@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 namespace Ohana3DS_Rebirth.Ohana.Compressions
@@ -15,10 +12,10 @@ namespace Ohana3DS_Rebirth.Ohana.Compressions
         /// <returns></returns>
         public static byte[] decompress(Stream data)
         {
+            data.Seek(0, SeekOrigin.Begin);
             byte[] input = new byte[data.Length];
             data.Read(input, 0, input.Length);
             data.Close();
-            data.Dispose();
 
             uint inputOffset = (uint)input.Length;
             int incrementalLength = readInt(input, ref inputOffset);
