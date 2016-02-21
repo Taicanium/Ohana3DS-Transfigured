@@ -1,0 +1,451 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{79753E74-1271-4C63-8249-0391F761CBCC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Ohana3DS_Transfigured</RootNamespace>
+    <AssemblyName>Ohana3DS Transfigured</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2902.0\Microsoft.DirectX.Direct3D.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.DirectX.Direct3DX, Version=1.0.2910.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Windows\Microsoft.NET\DirectX for Managed Code\1.0.2911.0\Microsoft.DirectX.Direct3DX.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualC" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FrmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmMain.Designer.cs">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ColorManager.cs" />
+    <Compile Include="GUI\DrawingUtils.cs" />
+    <Compile Include="GUI\Forms\OModelExportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Forms\OModelExportForm.Designer.cs">
+      <DependentUpon>OModelExportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Forms\OTextureExportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Forms\OTextureExportForm.Designer.cs">
+      <DependentUpon>OTextureExportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OCheckBox.Designer.cs">
+      <DependentUpon>OCheckBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OFloatTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OFloatTextBox.Designer.cs">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\IPanel.cs" />
+    <Compile Include="GUI\Panels\OAnimationsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OAnimationsPanel.Designer.cs">
+      <DependentUpon>OAnimationsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\ORadioButton.Designer.cs">
+      <DependentUpon>ORadioButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\ORgbaColorBox.Designer.cs">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OSeekBar.Designer.cs">
+      <DependentUpon>OSeekBar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OTextBox.Designer.cs">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OButton.Designer.cs">
+      <DependentUpon>OButton.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OGroupBox.Designer.cs">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OHScroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OHScroll.Designer.cs">
+      <DependentUpon>OHScroll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OLabel.Designer.cs">
+      <DependentUpon>OLabel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OList.Designer.cs">
+      <DependentUpon>OList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OMenuStrip.cs" />
+    <Compile Include="GUI\OMenuStrip.Designer.cs">
+      <DependentUpon>OMenuStrip.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OContainerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OContainerPanel.Designer.cs">
+      <DependentUpon>OContainerPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OModelsPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OModelsPanel.Designer.cs">
+      <DependentUpon>OModelsPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OImagePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OImagePanel.Designer.cs">
+      <DependentUpon>OImagePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OViewportPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OViewportPanel.Designer.cs">
+      <DependentUpon>OViewportPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OScrollablePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\OScrollablePanel.Designer.cs">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Panels\OTexturesPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Panels\OTexturesPanel.Designer.cs">
+      <DependentUpon>OTexturesPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\OVScroll.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="GUI\OVScroll.Designer.cs">
+      <DependentUpon>OVScroll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OForm.Designer.cs">
+      <DependentUpon>OForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Ohana\Animations\PB.cs" />
+    <Compile Include="Ohana\Animations\PF.cs" />
+    <Compile Include="Ohana\Animations\PK.cs" />
+    <Compile Include="Ohana\AnimationUtils.cs" />
+    <Compile Include="Ohana\Compressions\Yaz0.cs" />
+    <Compile Include="Ohana\Containers\DARC.cs" />
+    <Compile Include="Ohana\Containers\GARC.cs" />
+    <Compile Include="Ohana\Containers\SARC.cs" />
+    <Compile Include="Ohana\Models\MeshUtils.cs" />
+    <Compile Include="Ohana\Models\BCH.cs" />
+    <Compile Include="Ohana\Models\CGFX.cs" />
+    <Compile Include="Ohana\Compressions\LZSS.cs" />
+    <Compile Include="Ohana\Compressions\LZSS_Ninty.cs" />
+    <Compile Include="Ohana\Containers\DQVIIPack.cs" />
+    <Compile Include="Ohana\Containers\FPT0.cs" />
+    <Compile Include="Ohana\Containers\OContainer.cs" />
+    <Compile Include="Ohana\Containers\PkmnContainer.cs" />
+    <Compile Include="Ohana\Compressions\BLZ.cs" />
+    <Compile Include="Ohana\Models\GenericFormats\OBJ.cs" />
+    <Compile Include="Ohana\Models\MBN.cs" />
+    <Compile Include="Ohana\Models\NewLovePlus\Mesh.cs" />
+    <Compile Include="Ohana\Models\NewLovePlus\Model.cs" />
+    <Compile Include="Ohana\Models\NewLovePlus\Serialization.cs" />
+    <Compile Include="Ohana\Models\NLP.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\GR.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
+    <Compile Include="Ohana\PatriciaTree.cs" />
+    <Compile Include="Ohana\Textures\BCLIM.cs" />
+    <Compile Include="Ohana\Textures\DMP.cs" />
+    <Compile Include="Ohana\FileIO.cs" />
+    <Compile Include="Ohana\Models\GenericFormats\CMDL.cs" />
+    <Compile Include="Ohana\Models\GenericFormats\DAE.cs" />
+    <Compile Include="Ohana\Models\GenericFormats\SMD.cs" />
+    <Compile Include="Ohana\IOUtils.cs" />
+    <Compile Include="Ohana\Models\PICA200\PICACommand.cs" />
+    <Compile Include="Ohana\Models\PICA200\PICACommandReader.cs" />
+    <Compile Include="Ohana\Models\PICA200\PICACommandWriter.cs" />
+    <Compile Include="Ohana\RenderBase.cs" />
+    <Compile Include="Ohana\RenderEngine.cs" />
+    <Compile Include="Ohana\TextureCodec.cs" />
+    <Compile Include="Ohana\Textures\PocketMonsters\AD.cs" />
+    <Compile Include="Ohana\Textures\PocketMonsters\PT.cs" />
+    <Compile Include="Ohana\TextureUtils.cs" />
+    <Compile Include="Ohana\Models\ZMDL.cs" />
+    <Compile Include="Ohana\Textures\ZTEX.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="FrmMain.resx">
+      <DependentUpon>FrmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Forms\OModelExportForm.resx">
+      <DependentUpon>OModelExportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Forms\OTextureExportForm.resx">
+      <DependentUpon>OTextureExportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OFloatTextBox.resx">
+      <DependentUpon>OFloatTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OAnimationsPanel.resx">
+      <DependentUpon>OAnimationsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\ORgbaColorBox.resx">
+      <DependentUpon>ORgbaColorBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OTextBox.resx">
+      <DependentUpon>OTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OGroupBox.resx">
+      <DependentUpon>OGroupBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OList.resx">
+      <DependentUpon>OList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OContainerPanel.resx">
+      <DependentUpon>OContainerPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OModelsPanel.resx">
+      <DependentUpon>OModelsPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OImagePanel.resx">
+      <DependentUpon>OImagePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OViewportPanel.resx">
+      <DependentUpon>OViewportPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\OScrollablePanel.resx">
+      <DependentUpon>OScrollablePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Panels\OTexturesPanel.resx">
+      <DependentUpon>OTexturesPanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OForm.resx">
+      <DependentUpon>OForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OFragmentShader.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_knob.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_alpha_grid.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_minus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_upload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowdown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowup.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_download.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_trash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_imagedelete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_videodelete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowleft.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_arrowright.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_closehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_maximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_maximizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_minimizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_unmaximize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_unmaximizehover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_block.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_tick.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_folder.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ui_icon_minimize.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
