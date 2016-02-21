@@ -169,28 +169,31 @@ namespace Ohana3DS_Rebirth.Ohana
                 if (arguments.Count > 2)
                 {
                     saveDlg.FileName = arguments[2].ToString();
-                    RenderBase.OModelGroup model = (RenderBase.OModelGroup)data;
 
-                    switch (type)
+                    Directory.CreateDirectory(saveDlg.FileName);
+
+                    for (int i = 0; i < ((RenderBase.OModelGroup)data).model.Count; i++)
                     {
-                        case fileType.model:
-                            saveDlg.Title = "Export Model";
-                            saveDlg.Filter = "Source Model|*.smd";
-                            saveDlg.Filter += "|Collada Model|*.dae";
-                            saveDlg.Filter += "|Wavefront OBJ|*.obj";
-                            saveDlg.Filter += "|CTR Model|*.cmdl";
-                            OBJ.export(model, saveDlg.FileName + ".obj", arguments[0]);
-                            break;
-                        case fileType.texture:
-                            saveDlg.Title = "Export Texture";
-                            saveDlg.FileName = "dummy";
+                        OBJ.export(((RenderBase.OModelGroup)data), saveDlg.FileName + "/" + ((RenderBase.OModelGroup)data).model[i].name + ".obj", i);
+                    }
 
-                            foreach (RenderBase.OTexture texture in model.texture)
+                    foreach (RenderBase.OTexture texture in ((RenderBase.OModelGroup)data).texture)
+                    {
+                        if (File.Exists(saveDlg.FileName + "/" + texture.name + ".png"))
+                        {
+                            if (File.Exists(saveDlg.FileName + "/" + texture.name + "_2.png"))
                             {
-                                texture.texture.Save(Path.Combine(Path.GetDirectoryName(saveDlg.FileName), texture.name + ".png"));
+                                texture.texture.Save(saveDlg.FileName + "/" + texture.name + "_3.png");
                             }
-
-                            break;
+                            else
+                            {
+                                texture.texture.Save(saveDlg.FileName + "/" + texture.name + "_2.png");
+                            }
+                        }
+                        else
+                        {
+                            texture.texture.Save(saveDlg.FileName + "/" + texture.name + ".png");
+                        }
                     }
                 }
                 else

@@ -46,9 +46,9 @@ namespace Ohana3DS_Rebirth
                 openDlg.Filter += "|Pokémon Map model|*.gr";
                 openDlg.Filter += "|Pokémon Species model|*.pc";
                 openDlg.Filter += "|Pokémon Species texture|*.pt";
-                openDlg.Filter += "|Pokémon Material animation|*.pf";
-                openDlg.Filter += "|Pokémon Skeleton animation|*.pb";
-                openDlg.Filter += "|Pokémon Visibility animation|*.pk";
+                openDlg.Filter += "|Pokémon Container Type F|*.pf";
+                openDlg.Filter += "|Pokémon Container Type B|*.pb";
+                openDlg.Filter += "|Pokémon Container Type K|*.pk";
                 openDlg.Filter += "|Dragon Quest VII Package|*.pack";
                 openDlg.Filter += "|Dragon Quest VII Container|*.fpt";
                 openDlg.Filter += "|Dragon Quest VII Texture|*.dmp";
@@ -253,6 +253,12 @@ namespace Ohana3DS_Rebirth
             System.Collections.Generic.List<int> args;
             RenderBase.OModelGroup group;
             Ohana.Containers.GenericContainer.OContainer container;
+            RenderBase.OModelGroup tempGroup;
+            FileIdentifier.fileFormat fmt;
+            byte[] outBuf;
+            Stream outStr;
+            Stream str;
+            int currentChar = 0;
 
             for (int i = 0; i < files.Length; i++)
             {
@@ -264,7 +270,38 @@ namespace Ohana3DS_Rebirth
                     if (files[i].Contains(".pc"))
                     {
                         container = Ohana.Containers.PkmnContainer.load(files[i]);
-                        group = BCH.load(new MemoryStream(container.content[0].data));
+
+                        for (int j = 0; j < container.content.Count; j++)
+                        {
+                            tempGroup = BCH.load(new MemoryStream(container.content[0].data));
+
+                            for (int k = 0; k < tempGroup.model.Count; k++)
+                            {
+                                group.addModel(tempGroup.model[k]);
+                            }
+
+                            for (int k = 0; k < tempGroup.texture.Count; k++)
+                            {
+                                group.addTexture(tempGroup.texture[k]);
+                            }
+
+                            for (int k = 0; k < tempGroup.materialAnimation.list.Count; k++)
+                            {
+                                group.addMaterialAnimation((RenderBase.OMaterialAnimation)tempGroup.materialAnimation.list[k]);
+                            }
+
+                            for (int k = 0; k < tempGroup.visibilityAnimation.list.Count; k++)
+                            {
+                                group.addVisibilityAnimation((RenderBase.OVisibilityAnimation)tempGroup.visibilityAnimation.list[k]);
+                            }
+
+                            for (int k = 0; k < tempGroup.skeletalAnimation.list.Count; k++)
+                            {
+                                group.addSkeletalAnimaton((RenderBase.OSkeletalAnimation)tempGroup.skeletalAnimation.list[k]);
+                            }
+                        }
+
+                        currentChar++;
                     }
                     else if (files[i].Contains(".pt"))
                     {
@@ -290,14 +327,14 @@ namespace Ohana3DS_Rebirth
                     }
                     else if (files[i].Contains(".lz"))
                     {
-                        FileIdentifier.fileFormat fmt = FileIdentifier.fileFormat.LZSSCompressed;
-                        Stream str = new FileStream(files[i], FileMode.OpenOrCreate);
+                        fmt = FileIdentifier.fileFormat.LZSSCompressed;
+                        str = new FileStream(files[i], FileMode.OpenOrCreate);
 
                         CompressionManager.decompress(ref str, ref fmt);
 
-                        Stream outStr = new FileStream(files[i] + ".PKj", FileMode.OpenOrCreate);
+                        outStr = new FileStream(files[i] + ".pk", FileMode.OpenOrCreate);
 
-                        byte[] outBuf = new byte[str.Length];
+                        outBuf = new byte[str.Length];
                         str.Read(outBuf, 0, (int)outBuf.Length);
                         str.Close();
 
@@ -320,21 +357,25 @@ namespace Ohana3DS_Rebirth
                     {
                         args.Add(0);
                         args.Add(0);
-                        args.Add(i);
+                        args.Add(currentChar);
                         FileIO.export(FileIO.fileType.model, group, args);
                     }
 
                     if (group.texture.Count > 0)
                     {
-                        args.Add(0);
-                        args.Add(0);
-                        args.Add(i);
+                        if (args.Count < 3)
+                        {
+                            args.Add(0);
+                            args.Add(0);
+                            args.Add(currentChar);
+                        }
+
                         FileIO.export(FileIO.fileType.texture, group, args);
                     }
 
                     if (group.skeletalAnimation.list.Count > 0)
                     {
-                        MessageBox.Show("This texture file also contains animations.");
+                        MessageBox.Show("This file contains skeletal animations.");
                     }
                 }
                 catch

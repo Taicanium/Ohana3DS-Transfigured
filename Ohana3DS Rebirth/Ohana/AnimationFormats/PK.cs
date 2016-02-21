@@ -20,27 +20,176 @@ namespace Ohana3DS_Rebirth.Ohana.AnimationFormats
         public static RenderBase.OModelGroup load(Stream data)
         {
             RenderBase.OModelGroup group = new RenderBase.OModelGroup();
+            RenderBase.OModelGroup tempGroup;
+            byte[] buffer;
 
             BinaryReader input = new BinaryReader(data);
 
-            uint fileLength;
-
             string PKMagic2 = IOUtils.readString(input, 0, 2);
             data.Seek(0, SeekOrigin.Begin);
-            string PKMagic3 = IOUtils.readString(input, 0, 3);
-            data.Seek(0, SeekOrigin.Begin);
 
-            if (PKMagic3 == "PBJ")
+            if (PKMagic2 == "PB")
             {
                 data.Seek(4, SeekOrigin.Begin);
-                uint refCountPos = input.ReadUInt32();
-                data.Seek(refCountPos, SeekOrigin.Begin);
+
+                uint begin;
+                uint end;
+                uint length;
+
+                bool eof = false;
+
+                for (int i = 0; eof == false; i++)
+                {
+                    try
+                    {
+                        data.Seek(12 + i * 8, SeekOrigin.Begin);
+                    }
+                    catch
+                    {
+                        eof = true;
+                    }
+
+                    try
+                    {
+                        begin = input.ReadUInt32();
+                        end = input.ReadUInt32();
+
+                        if (begin < data.Length && end < data.Length)
+                        {
+                            //PK files seem to vary in their order of variables.
+                            if (end > begin)
+                            {
+                                length = end - begin;
+                            }
+                            else
+                            {
+                                length = begin - end;
+                            }
+
+                            if (length > 0)
+                            {
+                                if (end > begin)
+                                {
+                                    data.Seek(begin, SeekOrigin.Begin);
+                                }
+                                else
+                                {
+                                    data.Seek(end, SeekOrigin.Begin);
+                                }
+
+                                buffer = new byte[length];
+                                input.Read(buffer, 0, (int)length);
+
+                                if (buffer[0] == 0x42 && buffer[1] == 0x43 && buffer[2] == 0x48)
+                                {
+                                    tempGroup = BCH.load(new MemoryStream(buffer));
+
+                                    for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
+                                    {
+                                        group.skeletalAnimation.list.Add(tempGroup.skeletalAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.materialAnimation.list.Count; j++)
+                                    {
+                                        group.materialAnimation.list.Add(tempGroup.materialAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.visibilityAnimation.list.Count; j++)
+                                    {
+                                        group.visibilityAnimation.list.Add(tempGroup.visibilityAnimation.list[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        eof = true;
+                    }
+                }
             }
-            else if (PKMagic3 == "PKj")
+            else if (PKMagic2 == "PK")
             {
-                data.Seek(4, SeekOrigin.Begin);
-                uint refCountPos = input.ReadUInt32();
-                data.Seek(refCountPos, SeekOrigin.Begin);
+                data.Seek(8, SeekOrigin.Begin);
+
+                uint begin;
+                uint end;
+                uint length;
+
+                bool eof = false;
+
+                begin = 0;
+                end = 0;
+
+                for (int i = 0; eof == false; i++)
+                {
+                    try
+                    {
+                        data.Seek(12 + i * 8, SeekOrigin.Begin);
+                    }
+                    catch
+                    {
+                        eof = true;
+                    }
+
+                    try
+                    {
+                        begin = input.ReadUInt32();
+                        end = input.ReadUInt32();
+
+                        if (begin < data.Length && end < data.Length)
+                        {
+                            //PK files seem to vary in their order of variables.
+                            if (end > begin)
+                            {
+                                length = end - begin;
+                            }
+                            else
+                            {
+                                length = begin - end;
+                            }
+
+                            if (length > 0)
+                            {
+                                if (end > begin)
+                                {
+                                    data.Seek(begin, SeekOrigin.Begin);
+                                }
+                                else
+                                {
+                                    data.Seek(end, SeekOrigin.Begin);
+                                }
+
+                                buffer = new byte[length];
+                                input.Read(buffer, 0, (int)length);
+
+                                if (buffer[0] == 0x42 && buffer[1] == 0x43 && buffer[2] == 0x48)
+                                {
+                                    tempGroup = BCH.load(new MemoryStream(buffer));
+
+                                    for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
+                                    {
+                                        group.skeletalAnimation.list.Add(tempGroup.skeletalAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.materialAnimation.list.Count; j++)
+                                    {
+                                        group.materialAnimation.list.Add(tempGroup.materialAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.visibilityAnimation.list.Count; j++)
+                                    {
+                                        group.visibilityAnimation.list.Add(tempGroup.visibilityAnimation.list[j]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        eof = true;
+                    }
+                }
             }
             else if (PKMagic2 == "BM")
             {
@@ -66,11 +215,11 @@ namespace Ohana3DS_Rebirth.Ohana.AnimationFormats
                 {
                     data.Seek(begins[bchTableIndex], SeekOrigin.Begin);
 
-                    byte[] buffer = new byte[(int)ends[bchTableIndex] - (int)begins[bchTableIndex]];
+                    buffer = new byte[(int)ends[bchTableIndex] - (int)begins[bchTableIndex]];
 
                     data.Read(buffer, 0, (int)ends[bchTableIndex] - (int)begins[bchTableIndex]);
 
-                    RenderBase.OModelGroup tempGroup = BCH.load(new MemoryStream(buffer));
+                    tempGroup = BCH.load(new MemoryStream(buffer));
 
                     for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
                     {
@@ -102,54 +251,64 @@ namespace Ohana3DS_Rebirth.Ohana.AnimationFormats
 
                 for (int i = 0; eof == false; i++)
                 {
-                    data.Seek(8 + i * 8, SeekOrigin.Begin);
+                    try
+                    {
+                        data.Seek(12 + i * 8, SeekOrigin.Begin);
+                    }
+                    catch
+                    {
+                        eof = true;
+                    }
 
                     try
                     {
                         begin = input.ReadUInt32();
                         end = input.ReadUInt32();
 
-                        //PK files seem to vary in their order of variables.
-                        if (end > begin)
+                        if (begin < data.Length && end < data.Length)
                         {
-                            length = end - begin;
-                        }
-                        else
-                        {
-                            length = begin - end;
-                        }
-
-                        if (length > 0)
-                        {
+                            //PK files seem to vary in their order of variables.
                             if (end > begin)
                             {
-                                data.Seek(begin, SeekOrigin.Begin);
+                                length = end - begin;
                             }
                             else
                             {
-                                data.Seek(end, SeekOrigin.Begin);
+                                length = begin - end;
                             }
 
-                            byte[] buffer = new byte[length];
-                            input.Read(buffer, 0, (int)length);
-
-                            if (buffer[0] == 0x42 && buffer[1] == 0x43 && buffer[2] == 0x48)
+                            if (length > 0)
                             {
-                                RenderBase.OModelGroup tempGroup = BCH.load(new MemoryStream(buffer));
-
-                                for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
+                                if (end > begin)
                                 {
-                                    group.skeletalAnimation.list.Add(tempGroup.skeletalAnimation.list[j]);
+                                    data.Seek(begin, SeekOrigin.Begin);
+                                }
+                                else
+                                {
+                                    data.Seek(end, SeekOrigin.Begin);
                                 }
 
-                                for (int j = 0; j < tempGroup.materialAnimation.list.Count; j++)
-                                {
-                                    group.materialAnimation.list.Add(tempGroup.materialAnimation.list[j]);
-                                }
+                                buffer = new byte[length];
+                                input.Read(buffer, 0, (int)length);
 
-                                for (int j = 0; j < tempGroup.visibilityAnimation.list.Count; j++)
+                                if (buffer[0] == 0x42 && buffer[1] == 0x43 && buffer[2] == 0x48)
                                 {
-                                    group.visibilityAnimation.list.Add(tempGroup.visibilityAnimation.list[j]);
+                                    tempGroup = BCH.load(new MemoryStream(buffer));
+
+                                    for (int j = 0; j < tempGroup.skeletalAnimation.list.Count; j++)
+                                    {
+                                        group.skeletalAnimation.list.Add(tempGroup.skeletalAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.materialAnimation.list.Count; j++)
+                                    {
+                                        group.materialAnimation.list.Add(tempGroup.materialAnimation.list[j]);
+                                    }
+
+                                    for (int j = 0; j < tempGroup.visibilityAnimation.list.Count; j++)
+                                    {
+                                        group.visibilityAnimation.list.Add(tempGroup.visibilityAnimation.list[j]);
+                                    }
                                 }
                             }
                         }
