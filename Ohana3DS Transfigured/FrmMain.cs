@@ -5,6 +5,9 @@ using System.Windows.Forms;
 using Ohana3DS_Transfigured.GUI;
 using Ohana3DS_Transfigured.Ohana;
 using Ohana3DS_Transfigured.Properties;
+using Ohana3DS_Transfigured.Ohana.Models;
+using Ohana3DS_Transfigured.Ohana.Models.PocketMonsters;
+using Ohana3DS_Transfigured.Ohana.Animations;
 
 namespace Ohana3DS_Transfigured
 {
@@ -12,6 +15,7 @@ namespace Ohana3DS_Transfigured
     {
         bool hasFileToOpen;
         string fileToOpen;
+        FileIO.file file;
 
         public FrmMain()
         {
@@ -74,7 +78,7 @@ namespace Ohana3DS_Transfigured
 
         public void open(string fileName)
         {
-            FileIO.file file = FileIO.load(fileName);
+            file = FileIO.load(fileName);
             currentFormat = file.type;
 
             if (file.type != FileIO.formatType.unsupported)
@@ -101,7 +105,6 @@ namespace Ohana3DS_Transfigured
 
         private void FrmMain_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
         private void FrmMain_DragEnter(object sender, DragEventArgs e)
@@ -109,10 +112,14 @@ namespace Ohana3DS_Transfigured
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length > 0)
             {
-                destroyOpenPanels();
-                openFile openFileDelegate = new openFile(open);
-                BeginInvoke(openFileDelegate, files[0]);
-                Activate();
+                for (int i = 0; i < files.Length; i++)
+                {
+                    int[] arguments = { 0, 0, i + 1 };
+
+                    FileIO.export(FileIO.fileType.model, PC.load(files[i]), arguments);
+
+                    file.data = null;
+                }
             }
         }
 

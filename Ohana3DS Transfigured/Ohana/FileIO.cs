@@ -18,6 +18,10 @@ namespace Ohana3DS_Transfigured.Ohana
 {
     public class FileIO
     {
+        static RenderBase.OAnimationListBase output;
+        static List<RenderBase.OModel> omodelOutput;
+        static List<RenderBase.OTexture> otexOutput;
+
         [Flags]
         public enum formatType : uint
         {
@@ -123,8 +127,8 @@ namespace Ohana3DS_Transfigured.Ohana
                 case "PC": return new file { data = PC.load(data), type = formatType.model };
                 case "PT": return new file { data = PT.load(data), type = formatType.texture };
                 case "PK": return new file { data = PK.load(data), type = formatType.animation };
-                case "PB": return new file { data = PK.load(data), type = formatType.animation };
-                case "PF": return new file { data = PK.load(data), type = formatType.animation };
+                case "PB": return new file { data = PB.load(data), type = formatType.animation };
+                case "PF": return new file { data = PF.load(data), type = formatType.animation };
             }
 
             //Compressions
@@ -226,12 +230,12 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            List<RenderBase.OModel> output = new List<RenderBase.OModel>();
+                            omodelOutput = new List<RenderBase.OModel>();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                output.AddRange(((RenderBase.OModelGroup)load(fileName).data).model);
+                                omodelOutput.AddRange(((RenderBase.OModelGroup)load(fileName).data).model);
                             }
-                            return output;
+                            return omodelOutput;
                         }
                         break;
                     case fileType.texture:
@@ -240,17 +244,17 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            List<RenderBase.OTexture> output = new List<RenderBase.OTexture>();
+                            otexOutput = new List<RenderBase.OTexture>();
                             foreach (string fileName in openDlg.FileNames)
                             {
                                 file file = load(fileName);
                                 switch (file.type)
                                 {
-                                    case formatType.model: output.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
-                                    case formatType.texture: output.AddRange((List<RenderBase.OTexture>)file.data); break;
+                                    case formatType.model: otexOutput.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
+                                    case formatType.texture: otexOutput.AddRange((List<RenderBase.OTexture>)file.data); break;
                                 }
                             }
-                            return output;
+                            return otexOutput;
                         }
                         break;
                     case fileType.skeletalAnimation:
@@ -259,7 +263,7 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
                                 try
@@ -268,7 +272,6 @@ namespace Ohana3DS_Transfigured.Ohana
                                 }
                                 catch
                                 {
-                                    MessageBox.Show("This file does not contain any skeletal animations.");
                                 }
                             }
                             return output;
@@ -280,7 +283,7 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
                                 try
@@ -289,7 +292,6 @@ namespace Ohana3DS_Transfigured.Ohana
                                 }
                                 catch
                                 {
-                                    MessageBox.Show("This file does not contain any material animations.");
                                 }
                             }
                             return output;
@@ -301,7 +303,7 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
+                            output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
                                 try
@@ -310,7 +312,6 @@ namespace Ohana3DS_Transfigured.Ohana
                                 }
                                 catch
                                 {
-                                    MessageBox.Show("This file does not contain any visibility animations.");
                                 }
                             }
                             return output;
@@ -331,32 +332,48 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
         public static void export(fileType type, object data, params int[] arguments)
         {
-            using (SaveFileDialog saveDlg = new SaveFileDialog())
+            if (arguments.Length < 3)
             {
-                switch (type)
+                using (SaveFileDialog saveDlg = new SaveFileDialog())
                 {
-                    case fileType.model:
-                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
-                        exportMdl.Show();
-                        break;
-                    case fileType.texture:
-                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
-                        exportTex.Show();
-                        break;
-                    case fileType.skeletalAnimation:
-                        saveDlg.Title = "Export Skeletal Animation";
-                        saveDlg.Filter = "Source Model|*.smd";
-                        if (saveDlg.ShowDialog() == DialogResult.OK)
-                        {
-                            switch (saveDlg.FilterIndex)
+                    switch (type)
+                    {
+                        case fileType.model:
+                            OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            exportMdl.Show();
+                            break;
+                        case fileType.texture:
+                            OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            exportTex.Show();
+                            break;
+                        case fileType.skeletalAnimation:
+                            saveDlg.Title = "Export Skeletal Animation";
+                            saveDlg.Filter = "Source Model|*.smd|Autodesk DAE|*.dae";
+                            if (saveDlg.ShowDialog() == DialogResult.OK)
                             {
-                                case 1:
-                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
-                                    break;
+                                switch (saveDlg.FilterIndex)
+                                {
+                                    case 1:
+                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
+                                        {
+                                            SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                        }
+                                        break;
+                                    case 2:
+                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
+                                        {
+                                            DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                        }
+                                        break;
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
+            }
+            else
+            {
+                DAE.export((RenderBase.OModelGroup)data, arguments[2].ToString() + ".dae", arguments[0]);
             }
         }
     }

@@ -6,6 +6,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
 {
     class PC
     {
+        public static RenderBase.OModelGroup load(string file)
+        {
+            return load(File.Open(file, FileMode.Open));
+        }
+
         /// <summary>
         ///     Loads a PC monster model from Pokémon.
         /// </summary>
@@ -16,6 +21,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
             RenderBase.OModelGroup models = new RenderBase.OModelGroup();
 
             OContainer container = PkmnContainer.load(data);
+
             models = BCH.load(new MemoryStream(container.content[0].data));
 
             return models;
