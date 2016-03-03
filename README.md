@@ -15,7 +15,7 @@ Planned features include support for exporting animations other than skeletal mo
 
 Ohana3DS Rebirth is a reboot of the program Ohana3DS, reconstructed in Visual C# based on the original, which was written in Visual Basic. This program uses large amounts of code drawn from Ohana3DS Rebirth, originally written by GDKChan of the VG Resource. This program is not meant to be individual: Periodically, this program will undergo "version shifts," a term I have given to the process of updating the original code based on Rebirth to the latest version published by GDKChan, which in most cases will likely mandate rewriting large segments of my modifications.
 
-== Packaging textures with DAE models ==
+# Packaging textures with DAE models
 The DAE container class allows the user to export models and textures together in one file, but only if they are organized in a certain directory structure:
 
 (Root folder, i.e. Desktop)
