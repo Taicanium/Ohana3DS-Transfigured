@@ -629,6 +629,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 int nEyeTexs = 0;
                 int nMthTexs = 0;
 
+                int nEyeTexsNormal = 0;
+                int nEyeTexsShiny = 0;
+                int nMthTexsNormal = 0;
+                int nMthTexsShiny = 0;
+
                 foreach (string texDir in texDirs)
                 {
                     if (texDir.Contains(modelDir))
@@ -699,6 +704,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                                     model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace(".png", "_left_" + lEyeIndex.ToString() + ".png").Replace("Textures", "Models/DAE")));
                                                     lEyeIndex++;
                                                     nEyeTexs++;
+
+                                                    if (texFile.Contains("Shiny"))
+                                                    {
+                                                        nEyeTexsShiny++;
+                                                    }
+                                                    else
+                                                    {
+                                                        nEyeTexsNormal++;
+                                                    }
                                                 }
                                                 else // Right eye
                                                 {
@@ -713,11 +727,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                     }
                                 }
                             }
-                            else if (texFile.Contains("Eye") && texFile.Contains("Xtra"))
-                            {
-
-                            }
-                            else if (texFile.Contains("Mouth") && texFile.Contains("MouthNor") == false)
+                            else if (texFile.Contains("Mouth") && texFile.Contains("MouthNor") == false && texFile.Contains("Xtra") == false)
                             {
                                 bool placeholderTex = false;
                                 bool mirrorTex = true;
@@ -779,6 +789,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                             model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace(".png", "_" + mthIndex.ToString() + ".png").Replace("Textures", "Models/DAE")));
                                             mthIndex++;
                                             nMthTexs++;
+
+                                            if (texFile.Contains("Shiny"))
+                                            {
+                                                nMthTexsShiny++;
+                                            }
+                                            else
+                                            {
+                                                nMthTexsNormal++;
+                                            }
                                         }
                                     }
                                 }
@@ -813,8 +832,8 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                     }
                     else if (tex.name.Contains("Xtra"))
                     {
-                        img.id += "Id_bump";
-                        img.name += "Id_bump";
+                        img.id += "_bump";
+                        img.name += "_bump";
                     }
 
                     img.id += "_id";
@@ -835,10 +854,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         for (int i = 0; i < nEyeTexs; i++)
                         {
-                            add_string = "_left_" + i.ToString();
+                            if (i >= nEyeTexsNormal)
+                            {
+                                add_string = "_left_shiny_" + i.ToString();
+                            }
+                            else
+                            {
+                                add_string = "_left_" + i.ToString();
+                            }
 
                             daeMaterial mtl = new daeMaterial();
-                            mtl.name = mat.name + add_string + "_mat";
+                            mtl.name = (mat.name + add_string + "_mat").Replace("LEye", "Eye1").Replace("REye", "Eye1");
                             mtl.id = mtl.name + "_id";
                             mtl.instance_effect.url = "#eff_" + mat.name + add_string + "_id";
 
@@ -977,10 +1003,17 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         for (int i = 0; i < nEyeTexs; i++)
                         {
-                            add_string = "_right_" + i.ToString();
+                            if (i >= nEyeTexsNormal)
+                            {
+                                add_string = "_right_shiny_" + i.ToString();
+                            }
+                            else
+                            {
+                                add_string = "_right_" + i.ToString();
+                            }
 
                             daeMaterial mtl = new daeMaterial();
-                            mtl.name = mat.name + add_string + "_mat";
+                            mtl.name = (mat.name + add_string + "_mat").Replace("LEye", "Eye1").Replace("REye", "Eye1");
                             mtl.id = mtl.name + "_id";
                             mtl.instance_effect.url = "#eff_" + mat.name + add_string + "_id";
 
@@ -1119,12 +1152,19 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         for (int i = 0; i < nMthTexs; i++)
                         {
-                            add_string = "_" + i.ToString();
+                            if (i >= nMthTexsNormal)
+                            {
+                                add_string = i.ToString() + "_shiny_";
+                            }
+                            else
+                            {
+                                add_string = "_" + i.ToString();
+                            }
 
                             daeMaterial mtl = new daeMaterial();
-                            mtl.name = mat.name + add_string + "_mat";
-                            mtl.id = mtl.name + add_string + "_id";
-                            mtl.instance_effect.url = "#eff_" + mat.name + add_string + "_id";
+                            mtl.name = (mat.name + add_string + "_mat").Replace("Mouth", "Mouth1").Replace("Mouth11", "Mouth1");
+                            mtl.id = mtl.name + "_id";
+                            mtl.instance_effect.url = "#eff_" + mtl.name + "_id";
 
                             dae.library_materials.Add(mtl);
 
