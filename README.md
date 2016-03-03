@@ -34,3 +34,7 @@ The DAE container class allows the user to export models and textures together i
 It's a little bit complicated, I know, and I apologize. But it's a bit difficult to implement a different way of doing it, and there isn't much need since the files are available in exactly this format from a certain popular source (check the VG Resource).
 
 Drag-drop the BCH files into the Ohana3DS window. The Models/DAE folder will fill with DAE models set to use the corresponding textures, which will be copied to the DAE folder.
+
+# Contact
+
+You may contact me with any questions by email at SirLevalioDaBurnshire@gmail.com.
