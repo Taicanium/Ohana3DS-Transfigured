@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 using Ohana3DS_Transfigured.GUI;
@@ -7,6 +8,8 @@ using Ohana3DS_Transfigured.Ohana;
 using Ohana3DS_Transfigured.Properties;
 using Ohana3DS_Transfigured.Ohana.Models;
 using Ohana3DS_Transfigured.Ohana.Models.PocketMonsters;
+using Ohana3DS_Transfigured.Ohana.Textures;
+using Ohana3DS_Transfigured.Ohana.Textures.PocketMonsters;
 using Ohana3DS_Transfigured.Ohana.Animations;
 
 namespace Ohana3DS_Transfigured
@@ -110,13 +113,18 @@ namespace Ohana3DS_Transfigured
         private void FrmMain_DragEnter(object sender, DragEventArgs e)
         {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            RenderBase.OModelGroup group;
+
             if (files.Length > 0)
             {
                 for (int i = 0; i < files.Length; i++)
                 {
-                    int[] arguments = { 0, 0, i + 1 };
+                    group = PC.load(files[i]);
+                    group.model[0].name = Path.GetFileNameWithoutExtension(files[i]);
 
-                    FileIO.export(FileIO.fileType.model, PC.load(files[i]), arguments);
+                    object[] arguments = { 0, 0, Path.Combine(Path.GetDirectoryName(files[i]), Path.GetFileNameWithoutExtension(files[i])) };
+
+                    FileIO.export(FileIO.fileType.model, group, arguments);
 
                     file.data = null;
                 }

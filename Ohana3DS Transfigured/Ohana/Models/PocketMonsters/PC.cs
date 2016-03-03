@@ -8,7 +8,9 @@ namespace Ohana3DS_Transfigured.Ohana.Models.PocketMonsters
     {
         public static RenderBase.OModelGroup load(string file)
         {
-            return load(File.Open(file, FileMode.Open));
+            RenderBase.OModelGroup group = load(File.Open(file, FileMode.Open));
+
+            return group;
         }
 
         /// <summary>

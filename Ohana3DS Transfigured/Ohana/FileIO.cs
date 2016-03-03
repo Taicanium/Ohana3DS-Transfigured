@@ -330,7 +330,7 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="type">Type of the data to be exported</param>
         /// <param name="data">The data</param>
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
-        public static void export(fileType type, object data, params int[] arguments)
+        public static void export(fileType type, object data, params object[] arguments)
         {
             if (arguments.Length < 3)
             {
@@ -339,11 +339,11 @@ namespace Ohana3DS_Transfigured.Ohana
                     switch (type)
                     {
                         case fileType.model:
-                            OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                             exportMdl.Show();
                             break;
                         case fileType.texture:
-                            OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                            OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                             exportTex.Show();
                             break;
                         case fileType.skeletalAnimation:
@@ -356,13 +356,13 @@ namespace Ohana3DS_Transfigured.Ohana
                                     case 1:
                                         for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
                                         {
-                                            SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                            SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], i);
                                         }
                                         break;
                                     case 2:
                                         for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
                                         {
-                                            DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], i);
+                                            DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], i);
                                         }
                                         break;
                                 }
@@ -373,7 +373,7 @@ namespace Ohana3DS_Transfigured.Ohana
             }
             else
             {
-                DAE.export((RenderBase.OModelGroup)data, arguments[2].ToString() + ".dae", arguments[0]);
+                DAE.export((RenderBase.OModelGroup)data, Path.GetFullPath(arguments[2].ToString() + ".bch"), (int)arguments[0]);
             }
         }
     }
