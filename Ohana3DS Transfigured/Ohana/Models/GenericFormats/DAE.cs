@@ -115,6 +115,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             public string texcoord = "uv";
         }
 
+        public class daePhongNormalMapTexture
+        {
+            [XmlAttribute]
+            public string texture;
+
+            [XmlAttribute]
+            public string texcoord = "uv";
+        }
+
         public class daePhongDiffuseTexture
         {
             [XmlAttribute]
@@ -122,6 +131,11 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
             [XmlAttribute]
             public string texcoord = "uv";
+        }
+
+        public class daePhongNormalMap
+        {
+            public daePhongNormalMapTexture texture = new daePhongNormalMapTexture();
         }
 
         public class daePhongDiffuse
@@ -159,7 +173,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             public daeColor emission = new daeColor();
             public daeColor ambient = new daeColor();
             public daePhongDiffuse diffuse = new daePhongDiffuse();
-            public daePhongBump bump = new daePhongBump();
+            public daePhongNormalMap bump = new daePhongNormalMap();
             public daeColor specular = new daeColor();
         }
 
@@ -593,6 +607,42 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             public string url;
         }
 
+        private static Bitmap readPlaceholder(Bitmap origImage)
+        {
+            Bitmap placeholder;
+
+            int phW = 0;
+            int phH = 0;
+
+            for (int x = origImage.Width; x > -1; x--)
+            {
+                if (origImage.GetPixel(x, 0) == Color.Red)
+                {
+                    phW++;
+                }
+                else
+                {
+                    x = -1;
+                }
+            }
+
+            for (int y = origImage.Height; y > -1; y--)
+            {
+                if (origImage.GetPixel(0, y) == Color.Red)
+                {
+                    phH++;
+                }
+                else
+                {
+                    y = -1;
+                }
+            }
+
+            placeholder = new Bitmap(phW, phH);
+            
+            return placeholder;
+        }
+
         /// <summary>
         ///     Exports a Model to the Collada format.
         ///     See: https://www.khronos.org/files/collada_spec_1_4.pdf for more information.
@@ -622,17 +672,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 sDir = Path.GetDirectoryName(fileName);
                 texDirs = Directory.GetDirectories(Path.Combine(sDir, "../../Textures/"));
 
-                int lEyeIndex = 0;
-                int rEyeIndex = 0;
-                int mthIndex = 0;
-
-                int nEyeTexs = 0;
                 int nMthTexs = 0;
-
-                int nEyeTexsNormal = 0;
-                int nEyeTexsShiny = 0;
                 int nMthTexsNormal = 0;
                 int nMthTexsShiny = 0;
+
+                int nEyeTexs = 0;
+                int nEyeTexsNormal = 0;
+                int nEyeTexsShiny = 0;
 
                 foreach (string texDir in texDirs)
                 {
@@ -647,174 +693,145 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                         foreach (string texFile in texFiles)
                         {
-                            if (File.Exists(texFile.Replace("Textures", "Models/DAE")) == false)
-                            {
-                                File.Copy(texFile, texFile.Replace("Textures", "Models/DAE"));
-                            }
-
                             texFileWithoutExt = Path.GetFileNameWithoutExtension(texFile);
 
                             Bitmap tempBMP = (Bitmap)Bitmap.FromFile(texFile);
                             Bitmap finalBMP;
 
-                            if (texFile.Contains("Eye") && texFile.Contains("EyeNor") == false && texFile.Contains("Xtra") == false)
+                            if (texFile.Contains("Eye"))
                             {
-                                bool placeholderTex = false;
-                                bool mirrorTex = true;
-
-                                for (int x = 0; x < 2; x++)
+                                if (texFile.Contains("Nor") == false)
                                 {
-                                    for (int y = 0; y < 4; y++)
+                                    Bitmap phBMP = readPlaceholder(tempBMP);
+                                    int currentSet = 0;
+                                    bool placeholderTex = true;
+                                    bool blankTex = false;
+                                    int numBlankPixels = 0;
+
+                                    for (int setX = 0; setX < tempBMP.Width / phBMP.Width; setX++)
                                     {
-                                        for (int eye = 0; eye < 2; eye++)
+                                        for (int setY = 0; setY < tempBMP.Height / phBMP.Height; setY++)
                                         {
-                                            placeholderTex = false;
-                                            finalBMP = new Bitmap(64, 64);
+                                            finalBMP = new Bitmap(phBMP.Width, phBMP.Height);
 
-                                            for (int pX = 0; pX < 64; pX++)
+                                            for (int x = setX * phBMP.Width; x < (setX + 1) * phBMP.Width; x++)
                                             {
-                                                for (int pY = 0; pY < 64; pY++)
+                                                for (int y = setY * phBMP.Height; y < (setY + 1) * phBMP.Height; y++)
                                                 {
-                                                    Color c;
+                                                    finalBMP.SetPixel(x - (setX * phBMP.Width), y - (setY * phBMP.Height), tempBMP.GetPixel(x, y));
 
-                                                    c = tempBMP.GetPixel(pX + (x * 64), pY + (y * 64));
-
-                                                    if (c.R == 0xFF && c.B == 0x00 && c.G == 0x00)
+                                                    if (tempBMP.GetPixel(x, y) != Color.Red)
                                                     {
-                                                        placeholderTex = true;
+                                                        placeholderTex = false;
                                                     }
 
-                                                    if (mirrorTex)
+                                                    if (tempBMP.GetPixel(x, y) == Color.Black)
                                                     {
-                                                        finalBMP.SetPixel(63 - pX, pY, c);
-                                                    }
-                                                    else
-                                                    {
-                                                        finalBMP.SetPixel(pX, pY, c);
+                                                        numBlankPixels++;
                                                     }
                                                 }
                                             }
 
-                                            if (placeholderTex == false)
+                                            // In textures such as Dugtrio's, the eyes are ordered in sets of four, one for each head with the fourth left black.
+                                            // Test for that here: If the number of black pixels exceeds three-quarters of the texture, we probably have an empty texture.
+                                            if (numBlankPixels > (phBMP.Width * phBMP.Height) * (3 / 4))
                                             {
-                                                // Left eye
-                                                if (eye == 0)
-                                                {
-                                                    finalBMP.Save(texFile.Replace(".png", "_left_" + lEyeIndex.ToString() + ".png").Replace("Textures", "Models/DAE"));
-                                                    model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace(".png", "_left_" + lEyeIndex.ToString() + ".png").Replace("Textures", "Models/DAE")));
-                                                    lEyeIndex++;
-                                                    nEyeTexs++;
+                                                blankTex = true;
+                                            }
 
-                                                    if (texFile.Contains("Shiny"))
+                                            if (placeholderTex == false && blankTex == false)
+                                            {
+                                                finalBMP.Save(texFile.Replace("Textures", "Models/DAE").Replace(".png", "_" + currentSet.ToString() + ".png"));
+                                                model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE").Replace(".png", "_" + currentSet.ToString() + ".png")));
+                                                nEyeTexs++;
+
+                                                // If we only have one eye per texture, we need to mirror it to get the other eye.
+                                                if (phBMP.Width == phBMP.Height)
+                                                {
+                                                    string ext = "_" + currentSet.ToString();
+
+                                                    if (setX == 0)
                                                     {
-                                                        nEyeTexsShiny++;
+                                                        ext += "_left";
                                                     }
                                                     else
                                                     {
-                                                        nEyeTexsNormal++;
+                                                        ext += "_right";
                                                     }
-                                                }
-                                                else // Right eye
-                                                {
-                                                    finalBMP.Save(texFile.Replace(".png", "_right_" + rEyeIndex.ToString() + ".png").Replace("Textures", "Models/DAE"));
-                                                    model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace(".png", "_right_" + rEyeIndex.ToString() + ".png").Replace("Textures", "Models/DAE")));
-                                                    rEyeIndex++;
+
+                                                    finalBMP.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                                                    finalBMP.Save(texFile.Replace("Textures", "Models/DAE").Replace(".png", ext));
+                                                    model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE").Replace(".png", ext)));
                                                 }
                                             }
 
-                                            mirrorTex = !mirrorTex;
+                                            placeholderTex = true;
+                                            blankTex = false;
+                                            numBlankPixels = 0;
+
+                                            currentSet++;
                                         }
                                     }
                                 }
                             }
-                            else if (texFile.Contains("Mouth") && texFile.Contains("MouthNor") == false && texFile.Contains("Xtra") == false)
+                            else if (texFile.Contains("Mouth"))
                             {
-                                bool placeholderTex = false;
-                                bool mirrorTex = true;
-
-                                for (int x = 0; x < 2; x++)
+                                if (texFile.Contains("Nor") == false)
                                 {
-                                    for (int y = 0; y < 4; y++)
+                                    Bitmap phBMP = readPlaceholder(tempBMP);
+                                    int currentSet = 0;
+                                    bool placeholderTex = true;
+                                    bool blankTex = false;
+                                    int numBlankPixels = 0;
+
+                                    for (int setX = 0; setX < tempBMP.Width / phBMP.Width; setX++)
                                     {
-                                        // The left eye and right eye are treated separately. The left mouth and right mouth, obviously, are not.
-                                        finalBMP = new Bitmap(128, 64);
-                                        placeholderTex = false;
-
-                                        for (int half = 0; half < 2; half++)
+                                        for (int setY = 0; setY < tempBMP.Height / phBMP.Height; setY++)
                                         {
-                                            for (int pX = 0; pX < 64; pX++)
+                                            finalBMP = new Bitmap(phBMP.Width, phBMP.Height);
+
+                                            for (int x = setX * phBMP.Width; x < (setX + 1) * phBMP.Width; x++)
                                             {
-                                                for (int pY = 0; pY < 64; pY++)
+                                                for (int y = setY * phBMP.Height; y < (setY + 1) * phBMP.Height; y++)
                                                 {
-                                                    Color c;
+                                                    finalBMP.SetPixel(x - (setX * phBMP.Width), y - (setY * phBMP.Height), tempBMP.GetPixel(x, y));
 
-                                                    c = tempBMP.GetPixel(pX + (x * 64), pY + (y * 64));
-
-                                                    if (c.R == 0xFF && c.B == 0x00 && c.G == 0x00)
+                                                    if (tempBMP.GetPixel(x, y) != Color.Red)
                                                     {
-                                                        placeholderTex = true;
+                                                        placeholderTex = false;
                                                     }
 
-                                                    if (mirrorTex)
+                                                    if (tempBMP.GetPixel(x, y) == Color.Black)
                                                     {
-                                                        if (x == 1)
-                                                        {
-                                                            finalBMP.SetPixel((63 - pX) + 64, pY, c);
-                                                        }
-                                                        else
-                                                        {
-                                                            finalBMP.SetPixel(63 - pX, pY, c);
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        if (x == 1)
-                                                        {
-                                                            finalBMP.SetPixel(pX, pY, c);
-                                                        }
-                                                        else
-                                                        {
-                                                            finalBMP.SetPixel(pX + 64, pY, c);
-                                                        }
+                                                        numBlankPixels++;
                                                     }
                                                 }
                                             }
 
-                                            mirrorTex = !mirrorTex;
-                                        }
-
-                                        if (placeholderTex == false)
-                                        {
-                                            finalBMP.Save(texFile.Replace(".png", "_" + mthIndex.ToString() + ".png").Replace("Textures", "Models/DAE"));
-                                            model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace(".png", "_" + mthIndex.ToString() + ".png").Replace("Textures", "Models/DAE")));
-                                            mthIndex++;
-                                            nMthTexs++;
-
-                                            if (texFile.Contains("Shiny"))
+                                            if (numBlankPixels > (phBMP.Width * phBMP.Height) * (3 / 4))
                                             {
-                                                nMthTexsShiny++;
+                                                blankTex = true;
                                             }
-                                            else
+
+                                            if (placeholderTex == false && blankTex == false)
                                             {
-                                                nMthTexsNormal++;
+                                                finalBMP.Save(texFile.Replace("Textures", "Models/DAE").Replace(".png", "_" + currentSet.ToString() + ".png"));
+                                                model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE").Replace(".png", "_" + currentSet.ToString() + ".png")));
+                                                nMthTexs++;
                                             }
+
+                                            placeholderTex = true;
+                                            blankTex = false;
+                                            numBlankPixels = 0;
+
+                                            currentSet++;
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                finalBMP = tempBMP;
-
-                                model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE")));
                             }
                         }
                     }
                 }
-
-                lEyeIndex = 0;
-                rEyeIndex = 0;
-                mthIndex = 0;
 
                 foreach (RenderBase.OTexture tex in model.texture)
                 {
@@ -829,11 +846,26 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                     {
                         img.id += "_shiny";
                         img.name += "_shiny";
+
+                        if (tex.name.Contains("Mouth"))
+                        {
+                            nEyeTexsShiny++;
+                        }
+                        else if (tex.name.Contains("Eye"))
+                        {
+                            nMthTexsShiny++;
+                        }
                     }
-                    else if (tex.name.Contains("Xtra"))
+                    else
                     {
-                        img.id += "_bump";
-                        img.name += "_bump";
+                        if (tex.name.Contains("Mouth"))
+                        {
+                            nEyeTexsNormal++;
+                        }
+                        else if (tex.name.Contains("Eye"))
+                        {
+                            nMthTexsNormal++;
+                        }
                     }
 
                     img.id += "_id";
@@ -843,340 +875,57 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                     dae.library_images.Add(img);
                 }
 
+                bool eyeMaterialsLoaded = false;
+
                 foreach (RenderBase.OMaterial mat in mdl.material)
                 {
                     // For now, we are replicating the eye and mouth materials to account for each corresponding texture.
                     // I really hope this will be changed in the future.
 
-                    if (mat.name.Contains("LEye") && mat.name.Contains("EyeNor") == false)
+                    string base_string = mat.name;
+                    string mtl0_string = mat.name0;
+
+                    if (mat.name.Contains("Mouth") && mat.name.Contains("MouthNor") == false)
                     {
-                        string add_string;
-
-                        for (int i = 0; i < nEyeTexs; i++)
-                        {
-                            if (i >= nEyeTexsNormal)
-                            {
-                                add_string = "_left_shiny_" + i.ToString();
-                            }
-                            else
-                            {
-                                add_string = "_left_" + i.ToString();
-                            }
-
-                            daeMaterial mtl = new daeMaterial();
-                            mtl.name = (mat.name + add_string + "_mat").Replace("LEye", "Eye1").Replace("REye", "Eye1");
-                            mtl.id = mtl.name + "_id";
-                            mtl.instance_effect.url = "#eff_" + mat.name + add_string + "_id";
-
-                            dae.library_materials.Add(mtl);
-
-                            daeEffect eff = new daeEffect();
-                            eff.id = "eff_" + mat.name + add_string + "_id";
-                            eff.name = "eff_" + mat.name + add_string;
-
-                            daeParam surface = new daeParam();
-                            surface.surface = new daeParamSurfaceElement();
-                            surface.sid = "img_surface";
-                            surface.surface.type = "2D";
-                            surface.surface.init_from = mat.name0 + add_string + "_id";
-                            surface.surface.format = "PNG";
-                            eff.profile_COMMON.newparam.Add(surface);
-
-                            daeParam sampler = new daeParam();
-                            sampler.sampler2D = new daeParamSampler2DElement();
-                            sampler.sid = "img_sampler";
-                            sampler.sampler2D.source = "img_surface";
-
-                            switch (mat.textureMapper[0].wrapU)
-                            {
-                                case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
-                                case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
-                                case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
-                                case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_s = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].wrapV)
-                            {
-                                case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
-                                case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
-                                case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
-                                case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_t = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].minFilter)
-                            {
-                                case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                default: sampler.sampler2D.minfilter = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].magFilter)
-                            {
-                                case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
-                                case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
-                                default: sampler.sampler2D.magfilter = "NONE"; break;
-                            }
-
-                            sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
-
-                            eff.profile_COMMON.newparam.Add(sampler);
-
-                            eff.profile_COMMON.technique.sid = "img_technique";
-                            eff.profile_COMMON.technique.phong.emission.set(Color.Black);
-                            eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
-                            eff.profile_COMMON.technique.phong.specular.set(Color.White);
-                            eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
-
-                            bool isBumped = false;
-
-                            for (int j = 0; j < dae.library_images.Count; j++)
-                            {
-                                if (dae.library_images[j].id.Contains(add_string + "_bump_id") && isBumped == false)
-                                {
-                                    isBumped = true;
-
-                                    daeParam bumpSurface = new daeParam();
-                                    bumpSurface.surface = new daeParamSurfaceElement();
-                                    bumpSurface.sid = "bump_surface";
-                                    bumpSurface.surface.type = "2D";
-                                    bumpSurface.surface.init_from = mat.name0 + add_string + "_bump_id";
-                                    bumpSurface.surface.format = "PNG";
-                                    eff.profile_COMMON.newparam.Add(bumpSurface);
-
-                                    daeParam bumpSampler = new daeParam();
-                                    bumpSampler.sampler2D = new daeParamSampler2DElement();
-                                    bumpSampler.sid = "bump_sampler";
-                                    bumpSampler.sampler2D.source = "bump_surface";
-
-                                    switch (mat.textureMapper[0].wrapU)
-                                    {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_s = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_s = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_s = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_s = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_s = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].wrapV)
-                                    {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_t = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_t = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_t = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_t = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_t = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].minFilter)
-                                    {
-                                        case RenderBase.OTextureMinFilter.linearMipmapLinear: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.linearMipmapNearest: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapLinear: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapNearest: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                        default: bumpSampler.sampler2D.minfilter = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].magFilter)
-                                    {
-                                        case RenderBase.OTextureMagFilter.linear: bumpSampler.sampler2D.magfilter = "LINEAR"; break;
-                                        case RenderBase.OTextureMagFilter.nearest: bumpSampler.sampler2D.magfilter = "NEAREST"; break;
-                                        default: bumpSampler.sampler2D.magfilter = "NONE"; break;
-                                    }
-
-                                    bumpSampler.sampler2D.mipfilter = bumpSampler.sampler2D.magfilter;
-
-                                    eff.profile_COMMON.newparam.Add(bumpSampler);
-
-                                    eff.profile_COMMON.technique.phong.bump.texture.texture = "bump_sampler";
-                                }
-                            }
-
-                            dae.library_effects.Add(eff);
-                        }
-                    }
-                    else if (mat.name.Contains("REye") && mat.name.Contains("EyeNor") == false)
-                    {
-                        string add_string;
-
-                        for (int i = 0; i < nEyeTexs; i++)
-                        {
-                            if (i >= nEyeTexsNormal)
-                            {
-                                add_string = "_right_shiny_" + i.ToString();
-                            }
-                            else
-                            {
-                                add_string = "_right_" + i.ToString();
-                            }
-
-                            daeMaterial mtl = new daeMaterial();
-                            mtl.name = (mat.name + add_string + "_mat").Replace("LEye", "Eye1").Replace("REye", "Eye1");
-                            mtl.id = mtl.name + "_id";
-                            mtl.instance_effect.url = "#eff_" + mat.name + add_string + "_id";
-
-                            dae.library_materials.Add(mtl);
-
-                            daeEffect eff = new daeEffect();
-                            eff.id = "eff_" + mat.name + add_string + "_id";
-                            eff.name = "eff_" + mat.name + add_string;
-
-                            daeParam surface = new daeParam();
-                            surface.surface = new daeParamSurfaceElement();
-                            surface.sid = "img_surface";
-                            surface.surface.type = "2D";
-                            surface.surface.init_from = mat.name0 + add_string + "_id";
-                            surface.surface.format = "PNG";
-                            eff.profile_COMMON.newparam.Add(surface);
-
-                            daeParam sampler = new daeParam();
-                            sampler.sampler2D = new daeParamSampler2DElement();
-                            sampler.sid = "img_sampler";
-                            sampler.sampler2D.source = "img_surface";
-
-                            switch (mat.textureMapper[0].wrapU)
-                            {
-                                case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
-                                case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
-                                case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
-                                case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_s = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].wrapV)
-                            {
-                                case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
-                                case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
-                                case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
-                                case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_t = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].minFilter)
-                            {
-                                case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                default: sampler.sampler2D.minfilter = "NONE"; break;
-                            }
-
-                            switch (mat.textureMapper[0].magFilter)
-                            {
-                                case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
-                                case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
-                                default: sampler.sampler2D.magfilter = "NONE"; break;
-                            }
-
-                            sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
-
-                            eff.profile_COMMON.newparam.Add(sampler);
-
-                            eff.profile_COMMON.technique.sid = "img_technique";
-                            eff.profile_COMMON.technique.phong.emission.set(Color.Black);
-                            eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
-                            eff.profile_COMMON.technique.phong.specular.set(Color.White);
-                            eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
-
-                            bool isBumped = false;
-
-                            for (int j = 0; j < dae.library_images.Count; j++)
-                            {
-                                if (dae.library_images[j].id.Contains(add_string + "_bump_id") && isBumped == false)
-                                {
-                                    isBumped = true;
-
-                                    daeParam bumpSurface = new daeParam();
-                                    bumpSurface.surface = new daeParamSurfaceElement();
-                                    bumpSurface.sid = "bump_surface";
-                                    bumpSurface.surface.type = "2D";
-                                    bumpSurface.surface.init_from = mat.name0 + add_string + "_bump_id";
-                                    bumpSurface.surface.format = "PNG";
-                                    eff.profile_COMMON.newparam.Add(bumpSurface);
-
-                                    daeParam bumpSampler = new daeParam();
-                                    bumpSampler.sampler2D = new daeParamSampler2DElement();
-                                    bumpSampler.sid = "bump_sampler";
-                                    bumpSampler.sampler2D.source = "bump_surface";
-
-                                    switch (mat.textureMapper[0].wrapU)
-                                    {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_s = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_s = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_s = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_s = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_s = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].wrapV)
-                                    {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_t = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_t = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_t = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_t = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_t = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].minFilter)
-                                    {
-                                        case RenderBase.OTextureMinFilter.linearMipmapLinear: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.linearMipmapNearest: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapLinear: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapNearest: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                        default: bumpSampler.sampler2D.minfilter = "NONE"; break;
-                                    }
-
-                                    switch (mat.textureMapper[0].magFilter)
-                                    {
-                                        case RenderBase.OTextureMagFilter.linear: bumpSampler.sampler2D.magfilter = "LINEAR"; break;
-                                        case RenderBase.OTextureMagFilter.nearest: bumpSampler.sampler2D.magfilter = "NEAREST"; break;
-                                        default: bumpSampler.sampler2D.magfilter = "NONE"; break;
-                                    }
-
-                                    bumpSampler.sampler2D.mipfilter = bumpSampler.sampler2D.magfilter;
-
-                                    eff.profile_COMMON.newparam.Add(bumpSampler);
-
-                                    eff.profile_COMMON.technique.phong.bump.texture.texture = "bump_sampler";
-                                }
-                            }
-
-                            dae.library_effects.Add(eff);
-                        }
-                    }
-                    else if (mat.name.Contains("Mouth") && mat.name.Contains("MouthNor") == false)
-                    {
-                        string add_string;
+                        base_string = base_string.Replace("Mouth", "Mouth1").Replace("Mouth11", "Mouth1");
+                        mtl0_string = mtl0_string.Replace("Mouth", "Mouth1").Replace("Mouth11", "Mouth1");
 
                         for (int i = 0; i < nMthTexs; i++)
                         {
-                            if (i >= nMthTexsNormal)
+                            if (i > 0)
                             {
-                                add_string = i.ToString() + "_shiny_";
+                                base_string = base_string.Replace("Mouth1_" + (i - 1).ToString(), "Mouth1_" + i.ToString());
+                                mtl0_string = mtl0_string.Replace("Mouth1_" + (i - 1).ToString(), "Mouth1_" + i.ToString());
                             }
                             else
                             {
-                                add_string = "_" + i.ToString();
+                                base_string = base_string.Replace("Mouth1", "Mouth1_" + i.ToString());
+                                mtl0_string = mtl0_string.Replace("Mouth1", "Mouth1_" + i.ToString());
+                            }
+
+                            if (i >= nMthTexsNormal)
+                            {
+                                base_string = base_string.Replace("_mat", "_shiny_mat").Replace("_shiny_shiny", "_shiny");
+                                mtl0_string += "_shiny";
+                                mtl0_string = mtl0_string.Replace("_shiny_shiny", "_shiny");
                             }
 
                             daeMaterial mtl = new daeMaterial();
-                            mtl.name = (mat.name + add_string + "_mat").Replace("Mouth", "Mouth1").Replace("Mouth11", "Mouth1");
+                            mtl.name = base_string;
                             mtl.id = mtl.name + "_id";
-                            mtl.instance_effect.url = "#eff_" + mtl.name + "_id";
+                            mtl.instance_effect.url = "#eff_" + mtl.id;
 
                             dae.library_materials.Add(mtl);
 
                             daeEffect eff = new daeEffect();
-                            eff.id = "eff_" + mat.name + add_string + "_id";
-                            eff.name = "eff_" + mat.name + add_string;
+                            eff.id = "eff_" + mtl.id;
+                            eff.name = "eff_" + mtl.name;
 
                             daeParam surface = new daeParam();
                             surface.surface = new daeParamSurfaceElement();
                             surface.sid = "img_surface";
                             surface.surface.type = "2D";
-                            surface.surface.init_from = mat.name0 + add_string + "_id";
+                            surface.surface.init_from = mtl0_string + "_id";
                             surface.surface.format = "PNG";
                             eff.profile_COMMON.newparam.Add(surface);
 
@@ -1191,7 +940,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                 case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
                                 case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
                                 case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_s = "NONE"; break;
+                                default: sampler.sampler2D.wrap_s = "REPEAT"; break;
                             }
 
                             switch (mat.textureMapper[0].wrapV)
@@ -1200,7 +949,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                 case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
                                 case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
                                 case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                                default: sampler.sampler2D.wrap_t = "NONE"; break;
+                                default: sampler.sampler2D.wrap_t = "REPEAT"; break;
                             }
 
                             switch (mat.textureMapper[0].minFilter)
@@ -1229,70 +978,312 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                             eff.profile_COMMON.technique.phong.specular.set(Color.White);
                             eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
 
-                            bool isBumped = false;
-
                             for (int j = 0; j < dae.library_images.Count; j++)
                             {
-                                if (dae.library_images[j].id.Contains(add_string + "_bump_id") && isBumped == false)
+                                if (dae.library_images[j].id.Contains("Mouth1_normal"))
                                 {
-                                    isBumped = true;
+                                    daeParam normalSurface = new daeParam();
+                                    normalSurface.surface = new daeParamSurfaceElement();
+                                    normalSurface.sid = "normal_surface";
+                                    normalSurface.surface.type = "2D";
+                                    normalSurface.surface.init_from = dae.library_images[j].id;
+                                    normalSurface.surface.format = "PNG";
+                                    eff.profile_COMMON.newparam.Add(normalSurface);
 
-                                    daeParam bumpSurface = new daeParam();
-                                    bumpSurface.surface = new daeParamSurfaceElement();
-                                    bumpSurface.sid = "bump_surface";
-                                    bumpSurface.surface.type = "2D";
-                                    bumpSurface.surface.init_from = mat.name0 + add_string + "_bump_id";
-                                    bumpSurface.surface.format = "PNG";
-                                    eff.profile_COMMON.newparam.Add(bumpSurface);
-
-                                    daeParam bumpSampler = new daeParam();
-                                    bumpSampler.sampler2D = new daeParamSampler2DElement();
-                                    bumpSampler.sid = "bump_sampler";
-                                    bumpSampler.sampler2D.source = "bump_surface";
+                                    daeParam normalSampler = new daeParam();
+                                    normalSampler.sampler2D = new daeParamSampler2DElement();
+                                    normalSampler.sid = "normal_sampler";
+                                    normalSampler.sampler2D.source = "normal_surface";
 
                                     switch (mat.textureMapper[0].wrapU)
                                     {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_s = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_s = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_s = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_s = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_s = "NONE"; break;
+                                        case RenderBase.OTextureWrap.repeat: normalSampler.sampler2D.wrap_s = "WRAP"; break;
+                                        case RenderBase.OTextureWrap.mirroredRepeat: normalSampler.sampler2D.wrap_s = "MIRROR"; break;
+                                        case RenderBase.OTextureWrap.clampToEdge: normalSampler.sampler2D.wrap_s = "CLAMP"; break;
+                                        case RenderBase.OTextureWrap.clampToBorder: normalSampler.sampler2D.wrap_s = "BORDER"; break;
+                                        default: normalSampler.sampler2D.wrap_s = "REPEAT"; break;
                                     }
 
                                     switch (mat.textureMapper[0].wrapV)
                                     {
-                                        case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_t = "WRAP"; break;
-                                        case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_t = "MIRROR"; break;
-                                        case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_t = "CLAMP"; break;
-                                        case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_t = "BORDER"; break;
-                                        default: bumpSampler.sampler2D.wrap_t = "NONE"; break;
+                                        case RenderBase.OTextureWrap.repeat: normalSampler.sampler2D.wrap_t = "WRAP"; break;
+                                        case RenderBase.OTextureWrap.mirroredRepeat: normalSampler.sampler2D.wrap_t = "MIRROR"; break;
+                                        case RenderBase.OTextureWrap.clampToEdge: normalSampler.sampler2D.wrap_t = "CLAMP"; break;
+                                        case RenderBase.OTextureWrap.clampToBorder: normalSampler.sampler2D.wrap_t = "BORDER"; break;
+                                        default: normalSampler.sampler2D.wrap_t = "REPEAT"; break;
                                     }
 
                                     switch (mat.textureMapper[0].minFilter)
                                     {
-                                        case RenderBase.OTextureMinFilter.linearMipmapLinear: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.linearMipmapNearest: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapLinear: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                        case RenderBase.OTextureMinFilter.nearestMipmapNearest: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                        default: bumpSampler.sampler2D.minfilter = "NONE"; break;
+                                        case RenderBase.OTextureMinFilter.linearMipmapLinear: normalSampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                                        case RenderBase.OTextureMinFilter.linearMipmapNearest: normalSampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                                        case RenderBase.OTextureMinFilter.nearestMipmapLinear: normalSampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                                        case RenderBase.OTextureMinFilter.nearestMipmapNearest: normalSampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                                        default: normalSampler.sampler2D.minfilter = "NONE"; break;
                                     }
 
                                     switch (mat.textureMapper[0].magFilter)
                                     {
-                                        case RenderBase.OTextureMagFilter.linear: bumpSampler.sampler2D.magfilter = "LINEAR"; break;
-                                        case RenderBase.OTextureMagFilter.nearest: bumpSampler.sampler2D.magfilter = "NEAREST"; break;
-                                        default: bumpSampler.sampler2D.magfilter = "NONE"; break;
+                                        case RenderBase.OTextureMagFilter.linear: normalSampler.sampler2D.magfilter = "LINEAR"; break;
+                                        case RenderBase.OTextureMagFilter.nearest: normalSampler.sampler2D.magfilter = "NEAREST"; break;
+                                        default: normalSampler.sampler2D.magfilter = "NONE"; break;
                                     }
 
-                                    bumpSampler.sampler2D.mipfilter = bumpSampler.sampler2D.magfilter;
+                                    normalSampler.sampler2D.mipfilter = normalSampler.sampler2D.magfilter;
 
-                                    eff.profile_COMMON.newparam.Add(bumpSampler);
+                                    eff.profile_COMMON.newparam.Add(normalSampler);
 
-                                    eff.profile_COMMON.technique.phong.bump.texture.texture = "bump_sampler";
+                                    eff.profile_COMMON.technique.phong.bump.texture.texture = "normal_sampler";
                                 }
                             }
 
                             dae.library_effects.Add(eff);
+                        }
+                    }
+                    else if (mat.name.Contains("Eye") && mat.name.Contains("EyeNor") == false)
+                    {
+                        if (eyeMaterialsLoaded == false)
+                        {
+                            for (int i = 0; i < nEyeTexs; i++)
+                            {
+                                if (i > 0)
+                                {
+                                    base_string = base_string.Replace("Eye_" + (i - 1).ToString(), "Eye_" + i.ToString());
+                                    mtl0_string = mtl0_string.Replace("Eye_" + (i - 1).ToString(), "Eye_" + i.ToString());
+                                }
+                                else
+                                {
+                                    base_string = base_string.Replace("Eye", "Eye_" + i.ToString());
+                                    mtl0_string = mtl0_string.Replace("Eye", "Eye_" + i.ToString());
+                                }
+
+                                if (i >= nEyeTexsNormal)
+                                {
+                                    base_string = base_string.Replace("_mat", "_shiny_mat").Replace("_shiny_shiny", "_shiny");
+                                    mtl0_string += "_shiny";
+                                    mtl0_string = mtl0_string.Replace("_shiny_shiny", "_shiny");
+                                }
+
+                                daeMaterial mtl = new daeMaterial();
+                                mtl.name = base_string;
+                                mtl.id = mtl.name + "_id";
+                                mtl.instance_effect.url = "#eff_" + mtl.id;
+
+                                dae.library_materials.Add(mtl);
+
+                                daeEffect eff = new daeEffect();
+                                eff.id = "eff_" + mtl.id;
+                                eff.name = "eff_" + mtl.name;
+
+                                daeParam surface = new daeParam();
+                                surface.surface = new daeParamSurfaceElement();
+                                surface.sid = "img_surface";
+                                surface.surface.type = "2D";
+                                surface.surface.init_from = mtl0_string + "_id";
+                                surface.surface.format = "PNG";
+                                eff.profile_COMMON.newparam.Add(surface);
+
+                                daeParam sampler = new daeParam();
+                                sampler.sampler2D = new daeParamSampler2DElement();
+                                sampler.sid = "img_sampler";
+                                sampler.sampler2D.source = "img_surface";
+
+                                switch (mat.textureMapper[0].wrapU)
+                                {
+                                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
+                                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
+                                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
+                                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
+                                    default: sampler.sampler2D.wrap_s = "REPEAT"; break;
+                                }
+
+                                switch (mat.textureMapper[0].wrapV)
+                                {
+                                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
+                                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
+                                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
+                                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
+                                    default: sampler.sampler2D.wrap_t = "REPEAT"; break;
+                                }
+
+                                switch (mat.textureMapper[0].minFilter)
+                                {
+                                    case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                                    case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                                    case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                                    default: sampler.sampler2D.minfilter = "NONE"; break;
+                                }
+
+                                switch (mat.textureMapper[0].magFilter)
+                                {
+                                    case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
+                                    case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
+                                    default: sampler.sampler2D.magfilter = "NONE"; break;
+                                }
+
+                                sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
+
+                                eff.profile_COMMON.newparam.Add(sampler);
+
+                                eff.profile_COMMON.technique.sid = "img_technique";
+                                eff.profile_COMMON.technique.phong.emission.set(Color.Black);
+                                eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                                eff.profile_COMMON.technique.phong.specular.set(Color.White);
+                                eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
+
+                                dae.library_effects.Add(eff);
+
+                                for (int j = 0; j < model.texture.Count; j++)
+                                {
+                                    if (model.texture[j].name.Contains("_left"))
+                                    {
+                                        daeMaterial mtl_left = new daeMaterial();
+                                        mtl_left.name = base_string.Replace("_" + i.ToString(), "_" + i.ToString() + "_left");
+                                        mtl_left.id = mtl_left.name + "_id";
+                                        mtl_left.instance_effect.url = "#eff_" + mtl_left.id;
+
+                                        dae.library_materials.Add(mtl_left);
+
+                                        daeEffect eff_left = new daeEffect();
+                                        eff_left.id = "eff_" + mtl_left.id;
+                                        eff_left.name = "eff_" + mtl_left.name;
+
+                                        daeParam surface_left = new daeParam();
+                                        surface_left.surface = new daeParamSurfaceElement();
+                                        surface_left.sid = "img_surface";
+                                        surface_left.surface.type = "2D";
+                                        surface_left.surface.init_from = mtl0_string.Replace("_" + i.ToString(), "_" + i.ToString() + "_left") + "_id";
+                                        surface_left.surface.format = "PNG";
+                                        eff_left.profile_COMMON.newparam.Add(surface_left);
+
+                                        daeParam sampler_left = new daeParam();
+                                        sampler_left.sampler2D = new daeParamSampler2DElement();
+                                        sampler_left.sid = "img_sampler";
+                                        sampler_left.sampler2D.source = "img_surface";
+
+                                        switch (mat.textureMapper[0].wrapU)
+                                        {
+                                            case RenderBase.OTextureWrap.repeat: sampler_left.sampler2D.wrap_s = "WRAP"; break;
+                                            case RenderBase.OTextureWrap.mirroredRepeat: sampler_left.sampler2D.wrap_s = "MIRROR"; break;
+                                            case RenderBase.OTextureWrap.clampToEdge: sampler_left.sampler2D.wrap_s = "CLAMP"; break;
+                                            case RenderBase.OTextureWrap.clampToBorder: sampler_left.sampler2D.wrap_s = "BORDER"; break;
+                                            default: sampler_left.sampler2D.wrap_s = "REPEAT"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].wrapV)
+                                        {
+                                            case RenderBase.OTextureWrap.repeat: sampler_left.sampler2D.wrap_t = "WRAP"; break;
+                                            case RenderBase.OTextureWrap.mirroredRepeat: sampler_left.sampler2D.wrap_t = "MIRROR"; break;
+                                            case RenderBase.OTextureWrap.clampToEdge: sampler_left.sampler2D.wrap_t = "CLAMP"; break;
+                                            case RenderBase.OTextureWrap.clampToBorder: sampler_left.sampler2D.wrap_t = "BORDER"; break;
+                                            default: sampler_left.sampler2D.wrap_t = "REPEAT"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].minFilter)
+                                        {
+                                            case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler_left.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                                            case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler_left.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                                            case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler_left.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                                            case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler_left.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                                            default: sampler_left.sampler2D.minfilter = "NONE"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].magFilter)
+                                        {
+                                            case RenderBase.OTextureMagFilter.linear: sampler_left.sampler2D.magfilter = "LINEAR"; break;
+                                            case RenderBase.OTextureMagFilter.nearest: sampler_left.sampler2D.magfilter = "NEAREST"; break;
+                                            default: sampler_left.sampler2D.magfilter = "NONE"; break;
+                                        }
+
+                                        sampler_left.sampler2D.mipfilter = sampler_left.sampler2D.magfilter;
+
+                                        eff_left.profile_COMMON.newparam.Add(sampler_left);
+
+                                        eff_left.profile_COMMON.technique.sid = "img_technique";
+                                        eff_left.profile_COMMON.technique.phong.emission.set(Color.Black);
+                                        eff_left.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                                        eff_left.profile_COMMON.technique.phong.specular.set(Color.White);
+                                        eff_left.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
+
+                                        dae.library_effects.Add(eff_left);
+                                    }
+                                    else if (model.texture[j].name.Contains("_right"))
+                                    {
+                                        daeMaterial mtl_right = new daeMaterial();
+                                        mtl_right.name = base_string.Replace("_" + i.ToString(), "_" + i.ToString() + "_right");
+                                        mtl_right.id = mtl_right.name + "_id";
+                                        mtl_right.instance_effect.url = "#eff_" + mtl_right.id;
+
+                                        dae.library_materials.Add(mtl_right);
+
+                                        daeEffect eff_right = new daeEffect();
+                                        eff_right.id = "eff_" + mtl_right.id;
+                                        eff_right.name = "eff_" + mtl_right.name;
+
+                                        daeParam surface_right = new daeParam();
+                                        surface_right.surface = new daeParamSurfaceElement();
+                                        surface_right.sid = "img_surface";
+                                        surface_right.surface.type = "2D";
+                                        surface_right.surface.init_from = mtl0_string.Replace("_" + i.ToString(), "_" + i.ToString() + "_right") + "_id";
+                                        surface_right.surface.format = "PNG";
+                                        eff_right.profile_COMMON.newparam.Add(surface_right);
+
+                                        daeParam sampler_right = new daeParam();
+                                        sampler_right.sampler2D = new daeParamSampler2DElement();
+                                        sampler_right.sid = "img_sampler";
+                                        sampler_right.sampler2D.source = "img_surface";
+
+                                        switch (mat.textureMapper[0].wrapU)
+                                        {
+                                            case RenderBase.OTextureWrap.repeat: sampler_right.sampler2D.wrap_s = "WRAP"; break;
+                                            case RenderBase.OTextureWrap.mirroredRepeat: sampler_right.sampler2D.wrap_s = "MIRROR"; break;
+                                            case RenderBase.OTextureWrap.clampToEdge: sampler_right.sampler2D.wrap_s = "CLAMP"; break;
+                                            case RenderBase.OTextureWrap.clampToBorder: sampler_right.sampler2D.wrap_s = "BORDER"; break;
+                                            default: sampler_right.sampler2D.wrap_s = "REPEAT"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].wrapV)
+                                        {
+                                            case RenderBase.OTextureWrap.repeat: sampler_right.sampler2D.wrap_t = "WRAP"; break;
+                                            case RenderBase.OTextureWrap.mirroredRepeat: sampler_right.sampler2D.wrap_t = "MIRROR"; break;
+                                            case RenderBase.OTextureWrap.clampToEdge: sampler_right.sampler2D.wrap_t = "CLAMP"; break;
+                                            case RenderBase.OTextureWrap.clampToBorder: sampler_right.sampler2D.wrap_t = "BORDER"; break;
+                                            default: sampler_right.sampler2D.wrap_t = "REPEAT"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].minFilter)
+                                        {
+                                            case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler_right.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                                            case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler_right.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                                            case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler_right.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                                            case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler_right.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                                            default: sampler_right.sampler2D.minfilter = "NONE"; break;
+                                        }
+
+                                        switch (mat.textureMapper[0].magFilter)
+                                        {
+                                            case RenderBase.OTextureMagFilter.linear: sampler_right.sampler2D.magfilter = "LINEAR"; break;
+                                            case RenderBase.OTextureMagFilter.nearest: sampler_right.sampler2D.magfilter = "NEAREST"; break;
+                                            default: sampler_right.sampler2D.magfilter = "NONE"; break;
+                                        }
+
+                                        sampler_right.sampler2D.mipfilter = sampler_right.sampler2D.magfilter;
+
+                                        eff_right.profile_COMMON.newparam.Add(sampler_right);
+
+                                        eff_right.profile_COMMON.technique.sid = "img_technique";
+                                        eff_right.profile_COMMON.technique.phong.emission.set(Color.Black);
+                                        eff_right.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                                        eff_right.profile_COMMON.technique.phong.specular.set(Color.White);
+                                        eff_right.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
+
+                                        dae.library_effects.Add(eff_right);
+                                    }
+                                }
+                            }
+
+                            eyeMaterialsLoaded = true;
                         }
                     }
                     else
@@ -1300,19 +1291,19 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         daeMaterial mtl = new daeMaterial();
                         mtl.name = mat.name + "_mat";
                         mtl.id = mtl.name + "_id";
-                        mtl.instance_effect.url = "#eff_" + mat.name + "_id";
+                        mtl.instance_effect.url = "#eff_" + mtl.id;
 
                         dae.library_materials.Add(mtl);
 
                         daeEffect eff = new daeEffect();
-                        eff.id = "eff_" + mat.name + "_id";
-                        eff.name = "eff_" + mat.name;
+                        eff.id = "eff_" + mtl.id;
+                        eff.name = "eff_" + mtl.name;
 
                         daeParam surface = new daeParam();
                         surface.surface = new daeParamSurfaceElement();
                         surface.sid = "img_surface";
                         surface.surface.type = "2D";
-                        surface.surface.init_from = mat.name0 + "_id";
+                        surface.surface.init_from = mtl0_string + "_id";
                         surface.surface.format = "PNG";
                         eff.profile_COMMON.newparam.Add(surface);
 
@@ -1327,7 +1318,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                             case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
                             case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
                             case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                            default: sampler.sampler2D.wrap_s = "NONE"; break;
+                            default: sampler.sampler2D.wrap_s = "REPEAT"; break;
                         }
 
                         switch (mat.textureMapper[0].wrapV)
@@ -1336,7 +1327,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                             case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
                             case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
                             case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                            default: sampler.sampler2D.wrap_t = "NONE"; break;
+                            default: sampler.sampler2D.wrap_t = "REPEAT"; break;
                         }
 
                         switch (mat.textureMapper[0].minFilter)
@@ -1365,69 +1356,6 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         eff.profile_COMMON.technique.phong.specular.set(Color.White);
                         eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
 
-                        bool isBumped = false;
-
-                        for (int i = 0; i < dae.library_images.Count; i++)
-                        {
-                            if (dae.library_images[i].id.Contains("_bump_id") && isBumped == false)
-                            {
-                                isBumped = true;
-
-                                daeParam bumpSurface = new daeParam();
-                                bumpSurface.surface = new daeParamSurfaceElement();
-                                bumpSurface.sid = "bump_surface";
-                                bumpSurface.surface.type = "2D";
-                                bumpSurface.surface.init_from = mat.name0 + "_bump_id";
-                                bumpSurface.surface.format = "PNG";
-                                eff.profile_COMMON.newparam.Add(bumpSurface);
-
-                                daeParam bumpSampler = new daeParam();
-                                bumpSampler.sampler2D = new daeParamSampler2DElement();
-                                bumpSampler.sid = "bump_sampler";
-                                bumpSampler.sampler2D.source = "bump_surface";
-
-                                switch (mat.textureMapper[0].wrapU)
-                                {
-                                    case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_s = "WRAP"; break;
-                                    case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_s = "MIRROR"; break;
-                                    case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_s = "CLAMP"; break;
-                                    case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_s = "BORDER"; break;
-                                    default: bumpSampler.sampler2D.wrap_s = "NONE"; break;
-                                }
-
-                                switch (mat.textureMapper[0].wrapV)
-                                {
-                                    case RenderBase.OTextureWrap.repeat: bumpSampler.sampler2D.wrap_t = "WRAP"; break;
-                                    case RenderBase.OTextureWrap.mirroredRepeat: bumpSampler.sampler2D.wrap_t = "MIRROR"; break;
-                                    case RenderBase.OTextureWrap.clampToEdge: bumpSampler.sampler2D.wrap_t = "CLAMP"; break;
-                                    case RenderBase.OTextureWrap.clampToBorder: bumpSampler.sampler2D.wrap_t = "BORDER"; break;
-                                    default: bumpSampler.sampler2D.wrap_t = "NONE"; break;
-                                }
-
-                                switch (mat.textureMapper[0].minFilter)
-                                {
-                                    case RenderBase.OTextureMinFilter.linearMipmapLinear: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                                    case RenderBase.OTextureMinFilter.linearMipmapNearest: bumpSampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                                    case RenderBase.OTextureMinFilter.nearestMipmapLinear: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: bumpSampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                                    default: bumpSampler.sampler2D.minfilter = "NONE"; break;
-                                }
-
-                                switch (mat.textureMapper[0].magFilter)
-                                {
-                                    case RenderBase.OTextureMagFilter.linear: bumpSampler.sampler2D.magfilter = "LINEAR"; break;
-                                    case RenderBase.OTextureMagFilter.nearest: bumpSampler.sampler2D.magfilter = "NEAREST"; break;
-                                    default: bumpSampler.sampler2D.magfilter = "NONE"; break;
-                                }
-
-                                bumpSampler.sampler2D.mipfilter = bumpSampler.sampler2D.magfilter;
-
-                                eff.profile_COMMON.newparam.Add(bumpSampler);
-
-                                eff.profile_COMMON.technique.phong.bump.texture.texture = "bump_sampler";
-                            }
-                        }
-
                         dae.library_effects.Add(eff);
                     }
                 }
@@ -1450,13 +1378,13 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                     daeMaterial mtl = new daeMaterial();
                     mtl.name = mat.name + "_mat";
                     mtl.id = mtl.name + "_id";
-                    mtl.instance_effect.url = "#eff_" + mat.name + "_id";
+                    mtl.instance_effect.url = "#eff_" + mtl.id;
 
                     dae.library_materials.Add(mtl);
 
                     daeEffect eff = new daeEffect();
-                    eff.id = "eff_" + mat.name + "_id";
-                    eff.name = "eff_" + mat.name;
+                    eff.id = "eff_" + mtl.id;
+                    eff.name = "eff_" + mtl.name;
 
                     daeParam surface = new daeParam();
                     surface.surface = new daeParamSurfaceElement();
@@ -1477,7 +1405,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
                         case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
                         case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                        default: sampler.sampler2D.wrap_s = "NONE"; break;
+                        default: sampler.sampler2D.wrap_s = "REPEAT"; break;
                     }
 
                     switch (mat.textureMapper[0].wrapV)
@@ -1486,7 +1414,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                         case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
                         case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
                         case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                        default: sampler.sampler2D.wrap_t = "NONE"; break;
+                        default: sampler.sampler2D.wrap_t = "REPEAT"; break;
                     }
 
                     switch (mat.textureMapper[0].minFilter)
@@ -1671,8 +1599,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 geometry.mesh.vertices.id = meshName + "_vertices_id";
                 geometry.mesh.vertices.addInput("POSITION", "#" + position.id);
 
-
-                geometry.mesh.triangles.material = mdl.material[obj.materialId].name + "_0";
+                geometry.mesh.triangles.material = ((mdl.material[obj.materialId].name.Contains("Eye") || mdl.material[obj.materialId].name.Contains("Mouth")) ? mdl.material[obj.materialId].name.Replace("LEye", "Eye1_left_").Replace("REye", "Eye1_right_").Replace("Mouth", "Mouth1_").Replace("___", "__").Replace("__", "_") + "0" : mdl.material[obj.materialId].name) + "_mat";
                 geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
                 if (mesh.hasNormal) geometry.mesh.triangles.addInput("NORMAL", "#" + normal.id);
                 if (mesh.hasColor) geometry.mesh.triangles.addInput("COLOR", "#" + color.id);
@@ -1814,15 +1741,15 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                     node.instance_controller = new daeInstanceController();
                     node.instance_controller.url = "#" + controller.id;
                     node.instance_controller.skeleton = "#" + mdl.skeleton[0].name + "_bone_id";
-                    node.instance_controller.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_0";
-                    node.instance_controller.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_0" + "_mat_id";
+                    node.instance_controller.bind_material.technique_common.instance_material.symbol = ((mdl.material[obj.materialId].name.Contains("Eye") || mdl.material[obj.materialId].name.Contains("Mouth")) ? mdl.material[obj.materialId].name.Replace("LEye", "Eye1_left_").Replace("REye", "Eye1_right_").Replace("Mouth", "Mouth1_").Replace("___", "__").Replace("__", "_") + "0" : mdl.material[obj.materialId].name) + "_mat";
+                    node.instance_controller.bind_material.technique_common.instance_material.target = "#" + ((mdl.material[obj.materialId].name.Contains("Eye") || mdl.material[obj.materialId].name.Contains("Mouth")) ? mdl.material[obj.materialId].name.Replace("LEye", "Eye1_left_").Replace("REye", "Eye1_right_").Replace("Mouth", "Mouth1_").Replace("___", "__").Replace("__", "_") + "0" : mdl.material[obj.materialId].name) + "_mat_id";
                 }
                 else
                 {
                     node.instance_geometry = new daeInstanceGeometry();
                     node.instance_geometry.url = "#" + geometry.id;
-                    node.instance_geometry.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_0";
-                    node.instance_geometry.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_0" + "_mat_id";
+                    node.instance_geometry.bind_material.technique_common.instance_material.symbol = ((mdl.material[obj.materialId].name.Contains("Eye") || mdl.material[obj.materialId].name.Contains("Mouth")) ? mdl.material[obj.materialId].name.Replace("LEye", "Eye1_left_").Replace("REye", "Eye1_right_").Replace("Mouth", "Mouth1_").Replace("___", "__").Replace("__", "_") + "0" : mdl.material[obj.materialId].name) + "_mat";
+                    node.instance_geometry.bind_material.technique_common.instance_material.target = "#" + ((mdl.material[obj.materialId].name.Contains("Eye") || mdl.material[obj.materialId].name.Contains("Mouth")) ? mdl.material[obj.materialId].name.Replace("LEye", "Eye1_left_").Replace("REye", "Eye1_right_").Replace("Mouth", "Mouth1_").Replace("___", "__").Replace("__", "_") + "0" : mdl.material[obj.materialId].name) + "_mat_id";
                 }
 
                 vs.node.Add(node);
