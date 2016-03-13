@@ -1053,91 +1053,94 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
             foreach (RenderBase.OMaterial mat in mdl.material)
             {
-                mdl.material[currentMat].name = mat.name;
-                mdl.material[currentMat].name0 = mat.name0;
-
-                currentMat++;
-
-                daeMaterial mtl = new daeMaterial();
-                mtl.name = mat.name + "_mat";
-                mtl.id = mtl.name + "_id";
-                mtl.instance_effect.url = "#eff_" + mtl.id;
-
-                dae.library_materials.Add(mtl);
-
-                daeEffect eff = new daeEffect();
-                eff.id = "eff_" + mtl.id;
-                eff.name = "eff_" + mtl.name;
-
-                daeParam surface = new daeParam();
-                surface.surface = new daeParamSurfaceElement();
-                surface.sid = "img_surface";
-                surface.surface.type = "2D";
-                surface.surface.init_from = mat.name0 + "_id";
-                surface.surface.format = "PNG";
-                eff.profile_COMMON.newparam.Add(surface);
-
-                for (int i = 0; i < dae.library_images.Count; i++)
+                if (mat.name.Contains("mask") == false && mat.name0.Contains("mask") == false)
                 {
-                    if (dae.library_images[i].init_from.Contains(mat.name) || dae.library_images[i].id.Contains(mat.name) || dae.library_images[i].init_from.Contains(mat.name0) || dae.library_images[i].id.Contains(mat.name0))
+                    mdl.material[currentMat].name = mat.name;
+                    mdl.material[currentMat].name0 = mat.name0;
+
+                    currentMat++;
+
+                    daeMaterial mtl = new daeMaterial();
+                    mtl.name = mat.name + "_mat";
+                    mtl.id = mtl.name + "_id";
+                    mtl.instance_effect.url = "#eff_" + mtl.id;
+
+                    dae.library_materials.Add(mtl);
+
+                    daeEffect eff = new daeEffect();
+                    eff.id = "eff_" + mtl.id;
+                    eff.name = "eff_" + mtl.name;
+
+                    daeParam surface = new daeParam();
+                    surface.surface = new daeParamSurfaceElement();
+                    surface.sid = "img_surface";
+                    surface.surface.type = "2D";
+                    surface.surface.init_from = mat.name0 + "_id";
+                    surface.surface.format = "PNG";
+                    eff.profile_COMMON.newparam.Add(surface);
+
+                    for (int i = 0; i < dae.library_images.Count; i++)
                     {
-                        if (dae.library_images[i].init_from.Contains("Nor") == false)
+                        if (dae.library_images[i].init_from.Contains(mat.name) || dae.library_images[i].id.Contains(mat.name) || dae.library_images[i].init_from.Contains(mat.name0) || dae.library_images[i].id.Contains(mat.name0))
                         {
-                            surface.surface.init_from = dae.library_images[i].id;
+                            if (dae.library_images[i].init_from.Contains("Nor") == false)
+                            {
+                                surface.surface.init_from = dae.library_images[i].id;
+                            }
                         }
                     }
+
+                    daeParam sampler = new daeParam();
+                    sampler.sampler2D = new daeParamSampler2DElement();
+                    sampler.sid = "img_sampler";
+                    sampler.sampler2D.source = "img_surface";
+
+                    switch (mat.textureMapper[0].wrapU)
+                    {
+                        case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
+                        case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
+                        case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
+                        case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
+                        default: sampler.sampler2D.wrap_s = "WRAP"; break;
+                    }
+
+                    switch (mat.textureMapper[0].wrapV)
+                    {
+                        case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
+                        case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
+                        case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
+                        case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
+                        default: sampler.sampler2D.wrap_t = "WRAP"; break;
+                    }
+
+                    switch (mat.textureMapper[0].minFilter)
+                    {
+                        case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                        case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                        case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                        case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                        default: sampler.sampler2D.minfilter = "NONE"; break;
+                    }
+
+                    switch (mat.textureMapper[0].magFilter)
+                    {
+                        case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
+                        case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
+                        default: sampler.sampler2D.magfilter = "NONE"; break;
+                    }
+
+                    sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
+
+                    eff.profile_COMMON.newparam.Add(sampler);
+
+                    eff.profile_COMMON.technique.sid = "img_technique";
+                    eff.profile_COMMON.technique.phong.emission.set(Color.Black);
+                    eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                    eff.profile_COMMON.technique.phong.specular.set(Color.White);
+                    eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
+
+                    dae.library_effects.Add(eff);
                 }
-
-                daeParam sampler = new daeParam();
-                sampler.sampler2D = new daeParamSampler2DElement();
-                sampler.sid = "img_sampler";
-                sampler.sampler2D.source = "img_surface";
-
-                switch (mat.textureMapper[0].wrapU)
-                {
-                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
-                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
-                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
-                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                    default: sampler.sampler2D.wrap_s = "WRAP"; break;
-                }
-
-                switch (mat.textureMapper[0].wrapV)
-                {
-                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
-                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
-                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
-                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                    default: sampler.sampler2D.wrap_t = "WRAP"; break;
-                }
-
-                switch (mat.textureMapper[0].minFilter)
-                {
-                    case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                    case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                    case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                    default: sampler.sampler2D.minfilter = "NONE"; break;
-                }
-
-                switch (mat.textureMapper[0].magFilter)
-                {
-                    case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
-                    case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
-                    default: sampler.sampler2D.magfilter = "NONE"; break;
-                }
-
-                sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
-
-                eff.profile_COMMON.newparam.Add(sampler);
-
-                eff.profile_COMMON.technique.sid = "img_technique";
-                eff.profile_COMMON.technique.phong.emission.set(Color.Black);
-                eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
-                eff.profile_COMMON.technique.phong.specular.set(Color.White);
-                eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
-
-                dae.library_effects.Add(eff);
             }
 
             string jointNames = null;
@@ -1526,485 +1529,487 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
             #region Shiny
 
-			if (hasShiny)
-			{
-            currentMat = 0;
-
-            foreach (RenderBase.OMaterial mat in mdl.material)
+            if (hasShiny)
             {
-                mat.name += "_shiny";
-                mat.name0 += "_shiny";
+                currentMat = 0;
 
-                mdl.material[currentMat].name = mat.name;
-                mdl.material[currentMat].name0 = mat.name0;
-
-                currentMat++;
-
-                daeMaterial mtl = new daeMaterial();
-                mtl.name = mat.name + "_mat";
-                mtl.id = mtl.name + "_id";
-                mtl.instance_effect.url = "#eff_" + mtl.id;
-
-                daeShiny.library_materials.Add(mtl);
-
-                daeEffect eff = new daeEffect();
-                eff.id = "eff_" + mtl.id;
-                eff.name = "eff_" + mtl.name;
-
-                daeParam surface = new daeParam();
-                surface.surface = new daeParamSurfaceElement();
-                surface.sid = "img_surface";
-                surface.surface.type = "2D";
-                surface.surface.init_from = mat.name0 + "_id";
-                surface.surface.format = "PNG";
-                eff.profile_COMMON.newparam.Add(surface);
-
-                for (int i = 0; i < daeShiny.library_images.Count; i++)
+                foreach (RenderBase.OMaterial mat in mdl.material)
                 {
-                    if (daeShiny.library_images[i].init_from.Contains(mat.name) || daeShiny.library_images[i].id.Contains(mat.name) || daeShiny.library_images[i].init_from.Contains(mat.name0) || daeShiny.library_images[i].id.Contains(mat.name0))
+                    if (mat.name.Contains("mask") == false && mat.name0.Contains("mask") == false)
                     {
-                        if (daeShiny.library_images[i].init_from.Contains("Nor") == false)
+                        mat.name += "_shiny";
+                        mat.name0 += "_shiny";
+
+                        mdl.material[currentMat].name = mat.name;
+                        mdl.material[currentMat].name0 = mat.name0;
+
+                        currentMat++;
+
+                        daeMaterial mtl = new daeMaterial();
+                        mtl.name = mat.name + "_mat";
+                        mtl.id = mtl.name + "_id";
+                        mtl.instance_effect.url = "#eff_" + mtl.id;
+
+                        daeShiny.library_materials.Add(mtl);
+
+                        daeEffect eff = new daeEffect();
+                        eff.id = "eff_" + mtl.id;
+                        eff.name = "eff_" + mtl.name;
+
+                        daeParam surface = new daeParam();
+                        surface.surface = new daeParamSurfaceElement();
+                        surface.sid = "img_surface";
+                        surface.surface.type = "2D";
+                        surface.surface.init_from = mat.name0 + "_id";
+                        surface.surface.format = "PNG";
+                        eff.profile_COMMON.newparam.Add(surface);
+
+                        for (int i = 0; i < daeShiny.library_images.Count; i++)
                         {
-                            surface.surface.init_from = daeShiny.library_images[i].id;
-                        }
-                    }
-                }
-
-                daeParam sampler = new daeParam();
-                sampler.sampler2D = new daeParamSampler2DElement();
-                sampler.sid = "img_sampler";
-                sampler.sampler2D.source = "img_surface";
-
-                switch (mat.textureMapper[0].wrapU)
-                {
-                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
-                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
-                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
-                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
-                    default: sampler.sampler2D.wrap_s = "WRAP"; break;
-                }
-
-                switch (mat.textureMapper[0].wrapV)
-                {
-                    case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
-                    case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
-                    case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
-                    case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
-                    default: sampler.sampler2D.wrap_t = "WRAP"; break;
-                }
-
-                switch (mat.textureMapper[0].minFilter)
-                {
-                    case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
-                    case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
-                    case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
-                    case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
-                    default: sampler.sampler2D.minfilter = "NONE"; break;
-                }
-
-                switch (mat.textureMapper[0].magFilter)
-                {
-                    case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
-                    case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
-                    default: sampler.sampler2D.magfilter = "NONE"; break;
-                }
-
-                sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
-
-                eff.profile_COMMON.newparam.Add(sampler);
-
-                eff.profile_COMMON.technique.sid = "img_technique";
-                eff.profile_COMMON.technique.phong.emission.set(Color.Black);
-                eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
-                eff.profile_COMMON.technique.phong.specular.set(Color.White);
-                eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
-
-                daeShiny.library_effects.Add(eff);
-            }
-
-            jointNames = null;
-            invBindPoses = null;
-            for (int index = 0; index < mdl.skeleton.Count; index++)
-            {
-                RenderBase.OMatrix transform = new RenderBase.OMatrix();
-                transformSkeleton(mdl.skeleton, index, ref transform);
-
-                jointNames += mdl.skeleton[index].name;
-                daeMatrix mtx = new daeMatrix();
-                mtx.set(transform.invert());
-                invBindPoses += mtx.data;
-                if (index < mdl.skeleton.Count - 1)
-                {
-                    jointNames += " ";
-                    invBindPoses += " ";
-                }
-            }
-
-            meshIndex = 0;
-            vs = new daeVisualScene();
-            vs.name = "vs_" + mdl.name;
-            vs.id = vs.name + "_id";
-            if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
-
-            mirrorEyeUVs = true;
-            mirrorIrisUVs = true;
-
-            foreach (RenderBase.OMesh obj in mdl.mesh)
-            {
-                //Geometry
-                daeGeometry geometry = new daeGeometry();
-
-                string meshName = "mesh_" + meshIndex++ + "_" + obj.name;
-                geometry.id = meshName + "_id";
-                geometry.name = meshName;
-
-                MeshUtils.optimizedMesh mesh = MeshUtils.optimizeMesh(obj);
-                List<float> positions = new List<float>();
-                List<float> normals = new List<float>();
-                List<float> uv0 = new List<float>();
-                List<float> uv1 = new List<float>();
-                List<float> uv2 = new List<float>();
-                List<float> colors = new List<float>();
-
-                if (obj.name.Contains("Iris"))
-                {
-                    if (mirrorIrisUVs == true)
-                    {
-                        foreach (RenderBase.OVertex vtx in mesh.vertices)
-                        {
-                            if (mesh.texUVCount > 0)
+                            if (daeShiny.library_images[i].init_from.Contains(mat.name) || daeShiny.library_images[i].id.Contains(mat.name) || daeShiny.library_images[i].init_from.Contains(mat.name0) || daeShiny.library_images[i].id.Contains(mat.name0))
                             {
-                                vtx.texture0.x = 1.0f - vtx.texture0.x;
-                            }
-
-                            if (mesh.texUVCount > 1)
-                            {
-                                vtx.texture1.x = 1.0f - vtx.texture1.x;
-                            }
-
-                            if (mesh.texUVCount > 2)
-                            {
-                                vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                if (daeShiny.library_images[i].init_from.Contains("Nor") == false)
+                                {
+                                    surface.surface.init_from = daeShiny.library_images[i].id;
+                                }
                             }
                         }
-                    }
 
-                    mirrorIrisUVs = !mirrorIrisUVs;
-                }
-                else if (obj.name.Contains("Eye"))
-                {
-                    if (mirrorEyeUVs == true)
-                    {
-                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        daeParam sampler = new daeParam();
+                        sampler.sampler2D = new daeParamSampler2DElement();
+                        sampler.sid = "img_sampler";
+                        sampler.sampler2D.source = "img_surface";
+
+                        switch (mat.textureMapper[0].wrapU)
                         {
-                            if (mesh.texUVCount > 0)
-                            {
-                                vtx.texture0.x = 1.0f - vtx.texture0.x;
-                            }
+                            case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_s = "WRAP"; break;
+                            case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_s = "MIRROR"; break;
+                            case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_s = "CLAMP"; break;
+                            case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_s = "BORDER"; break;
+                            default: sampler.sampler2D.wrap_s = "WRAP"; break;
+                        }
 
-                            if (mesh.texUVCount > 1)
-                            {
-                                vtx.texture1.x = 1.0f - vtx.texture1.x;
-                            }
+                        switch (mat.textureMapper[0].wrapV)
+                        {
+                            case RenderBase.OTextureWrap.repeat: sampler.sampler2D.wrap_t = "WRAP"; break;
+                            case RenderBase.OTextureWrap.mirroredRepeat: sampler.sampler2D.wrap_t = "MIRROR"; break;
+                            case RenderBase.OTextureWrap.clampToEdge: sampler.sampler2D.wrap_t = "CLAMP"; break;
+                            case RenderBase.OTextureWrap.clampToBorder: sampler.sampler2D.wrap_t = "BORDER"; break;
+                            default: sampler.sampler2D.wrap_t = "WRAP"; break;
+                        }
 
-                            if (mesh.texUVCount > 2)
+                        switch (mat.textureMapper[0].minFilter)
+                        {
+                            case RenderBase.OTextureMinFilter.linearMipmapLinear: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_LINEAR"; break;
+                            case RenderBase.OTextureMinFilter.linearMipmapNearest: sampler.sampler2D.minfilter = "LINEAR_MIPMAP_NEAREST"; break;
+                            case RenderBase.OTextureMinFilter.nearestMipmapLinear: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_LINEAR"; break;
+                            case RenderBase.OTextureMinFilter.nearestMipmapNearest: sampler.sampler2D.minfilter = "NEAREST_MIPMAP_NEAREST"; break;
+                            default: sampler.sampler2D.minfilter = "NONE"; break;
+                        }
+
+                        switch (mat.textureMapper[0].magFilter)
+                        {
+                            case RenderBase.OTextureMagFilter.linear: sampler.sampler2D.magfilter = "LINEAR"; break;
+                            case RenderBase.OTextureMagFilter.nearest: sampler.sampler2D.magfilter = "NEAREST"; break;
+                            default: sampler.sampler2D.magfilter = "NONE"; break;
+                        }
+
+                        sampler.sampler2D.mipfilter = sampler.sampler2D.magfilter;
+
+                        eff.profile_COMMON.newparam.Add(sampler);
+
+                        eff.profile_COMMON.technique.sid = "img_technique";
+                        eff.profile_COMMON.technique.phong.emission.set(Color.Black);
+                        eff.profile_COMMON.technique.phong.ambient.set(Color.Black);
+                        eff.profile_COMMON.technique.phong.specular.set(Color.White);
+                        eff.profile_COMMON.technique.phong.diffuse.texture.texture = "img_sampler";
+
+                        daeShiny.library_effects.Add(eff);
+                    }
+                }
+
+                jointNames = null;
+                invBindPoses = null;
+                for (int index = 0; index < mdl.skeleton.Count; index++)
+                {
+                    RenderBase.OMatrix transform = new RenderBase.OMatrix();
+                    transformSkeleton(mdl.skeleton, index, ref transform);
+
+                    jointNames += mdl.skeleton[index].name;
+                    daeMatrix mtx = new daeMatrix();
+                    mtx.set(transform.invert());
+                    invBindPoses += mtx.data;
+                    if (index < mdl.skeleton.Count - 1)
+                    {
+                        jointNames += " ";
+                        invBindPoses += " ";
+                    }
+                }
+
+                meshIndex = 0;
+                vs = new daeVisualScene();
+                vs.name = "vs_" + mdl.name;
+                vs.id = vs.name + "_id";
+                if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
+
+                mirrorEyeUVs = true;
+                mirrorIrisUVs = true;
+
+                foreach (RenderBase.OMesh obj in mdl.mesh)
+                {
+                    //Geometry
+                    daeGeometry geometry = new daeGeometry();
+
+                    string meshName = "mesh_" + meshIndex++ + "_" + obj.name;
+                    geometry.id = meshName + "_id";
+                    geometry.name = meshName;
+
+                    MeshUtils.optimizedMesh mesh = MeshUtils.optimizeMesh(obj);
+                    List<float> positions = new List<float>();
+                    List<float> normals = new List<float>();
+                    List<float> uv0 = new List<float>();
+                    List<float> uv1 = new List<float>();
+                    List<float> uv2 = new List<float>();
+                    List<float> colors = new List<float>();
+
+                    if (obj.name.Contains("Iris"))
+                    {
+                        if (mirrorIrisUVs == true)
+                        {
+                            foreach (RenderBase.OVertex vtx in mesh.vertices)
                             {
-                                vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                if (mesh.texUVCount > 0)
+                                {
+                                    vtx.texture0.x = 1.0f - vtx.texture0.x;
+                                }
+
+                                if (mesh.texUVCount > 1)
+                                {
+                                    vtx.texture1.x = 1.0f - vtx.texture1.x;
+                                }
+
+                                if (mesh.texUVCount > 2)
+                                {
+                                    vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                }
                             }
                         }
+
+                        mirrorIrisUVs = !mirrorIrisUVs;
                     }
-
-                    mirrorEyeUVs = !mirrorEyeUVs;
-                }
-
-                foreach (RenderBase.OVertex vtx in mesh.vertices)
-                {
-                    positions.Add(vtx.position.x);
-                    positions.Add(vtx.position.y);
-                    positions.Add(vtx.position.z);
-
-                    if (mesh.hasNormal)
+                    else if (obj.name.Contains("Eye"))
                     {
-                        normals.Add(vtx.normal.x);
-                        normals.Add(vtx.normal.y);
-                        normals.Add(vtx.normal.z);
+                        if (mirrorEyeUVs == true)
+                        {
+                            foreach (RenderBase.OVertex vtx in mesh.vertices)
+                            {
+                                if (mesh.texUVCount > 0)
+                                {
+                                    vtx.texture0.x = 1.0f - vtx.texture0.x;
+                                }
+
+                                if (mesh.texUVCount > 1)
+                                {
+                                    vtx.texture1.x = 1.0f - vtx.texture1.x;
+                                }
+
+                                if (mesh.texUVCount > 2)
+                                {
+                                    vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                }
+                            }
+                        }
+
+                        mirrorEyeUVs = !mirrorEyeUVs;
                     }
 
-                    if (mesh.texUVCount > 0)
-                    {
-                        uv0.Add(vtx.texture0.x);
-                        uv0.Add(vtx.texture0.y);
-                    }
-
-                    if (mesh.texUVCount > 1)
-                    {
-                        uv1.Add(vtx.texture1.x);
-                        uv1.Add(vtx.texture1.y);
-                    }
-
-                    if (mesh.texUVCount > 2)
-                    {
-                        uv2.Add(vtx.texture2.x);
-                        uv2.Add(vtx.texture2.y);
-                    }
-
-                    if (mesh.hasColor)
-                    {
-                        colors.Add(((vtx.diffuseColor >> 16) & 0xff) / 255f);
-                        colors.Add(((vtx.diffuseColor >> 8) & 0xff) / 255f);
-                        colors.Add((vtx.diffuseColor & 0xff) / 255f);
-                        colors.Add(((vtx.diffuseColor >> 24) & 0xff) / 255f);
-                    }
-                }
-
-                daeSource position = new daeSource();
-                position.name = meshName + "_position";
-                position.id = position.name + "_id";
-                position.float_array = new daeFloatArray();
-                position.float_array.id = position.name + "_array_id";
-                position.float_array.set(positions);
-                position.technique_common.accessor.source = "#" + position.float_array.id;
-                position.technique_common.accessor.count = (uint)mesh.vertices.Count;
-                position.technique_common.accessor.stride = 3;
-                position.technique_common.accessor.addParam("X", "float");
-                position.technique_common.accessor.addParam("Y", "float");
-                position.technique_common.accessor.addParam("Z", "float");
-
-                geometry.mesh.source.Add(position);
-
-                daeSource normal = new daeSource();
-                if (mesh.hasNormal)
-                {
-                    normal.name = meshName + "_normal";
-                    normal.id = normal.name + "_id";
-                    normal.float_array = new daeFloatArray();
-                    normal.float_array.id = normal.name + "_array_id";
-                    normal.float_array.set(normals);
-                    normal.technique_common.accessor.source = "#" + normal.float_array.id;
-                    normal.technique_common.accessor.count = (uint)mesh.vertices.Count;
-                    normal.technique_common.accessor.stride = 3;
-                    normal.technique_common.accessor.addParam("X", "float");
-                    normal.technique_common.accessor.addParam("Y", "float");
-                    normal.technique_common.accessor.addParam("Z", "float");
-
-                    geometry.mesh.source.Add(normal);
-                }
-
-                daeSource[] texUV = new daeSource[3];
-                for (int i = 0; i < mesh.texUVCount; i++)
-                {
-                    texUV[i] = new daeSource();
-
-                    texUV[i].name = meshName + "_uv" + i;
-                    texUV[i].id = texUV[i].name + "_id";
-                    texUV[i].float_array = new daeFloatArray();
-                    texUV[i].float_array.id = texUV[i].name + "_array_id";
-                    texUV[i].technique_common.accessor.source = "#" + texUV[i].float_array.id;
-                    texUV[i].technique_common.accessor.count = (uint)mesh.vertices.Count;
-                    texUV[i].technique_common.accessor.stride = 2;
-                    texUV[i].technique_common.accessor.addParam("S", "float");
-                    texUV[i].technique_common.accessor.addParam("T", "float");
-
-                    geometry.mesh.source.Add(texUV[i]);
-                }
-
-                daeSource color = new daeSource();
-                if (mesh.hasColor)
-                {
-                    color.name = meshName + "_color";
-                    color.id = color.name + "_id";
-                    color.float_array = new daeFloatArray();
-                    color.float_array.id = color.name + "_array_id";
-                    color.float_array.set(colors);
-                    color.technique_common.accessor.source = "#" + color.float_array.id;
-                    color.technique_common.accessor.count = (uint)mesh.vertices.Count;
-                    color.technique_common.accessor.stride = 4;
-                    color.technique_common.accessor.addParam("R", "float");
-                    color.technique_common.accessor.addParam("G", "float");
-                    color.technique_common.accessor.addParam("B", "float");
-                    color.technique_common.accessor.addParam("A", "float");
-
-                    geometry.mesh.source.Add(color);
-                }
-
-                geometry.mesh.vertices.id = meshName + "_vertices_id";
-                geometry.mesh.vertices.addInput("POSITION", "#" + position.id);
-
-                geometry.mesh.triangles.material = mdl.material[obj.materialId].name + "_mat";
-                geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
-                if (mesh.hasNormal) geometry.mesh.triangles.addInput("NORMAL", "#" + normal.id);
-                if (mesh.hasColor) geometry.mesh.triangles.addInput("COLOR", "#" + color.id);
-                if (mesh.texUVCount > 0)
-                {
-                    texUV[0].float_array.set(uv0);
-                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[0].id);
-                }
-                if (mesh.texUVCount > 1)
-                {
-                    texUV[1].float_array.set(uv1);
-                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[1].id, 0, 1);
-                }
-                if (mesh.texUVCount > 2)
-                {
-                    texUV[2].float_array.set(uv2);
-                    geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[2].id, 0, 2);
-                }
-                geometry.mesh.triangles.set(mesh.indices);
-
-                daeShiny.library_geometries.Add(geometry);
-
-                bool hasNode = obj.vertices[0].node.Count > 0;
-                bool hasWeight = obj.vertices[0].weight.Count > 0;
-                bool hasController = hasNode && hasWeight;
-
-                //Controller
-                daeController controller = new daeController();
-                if (hasController)
-                {
-                    controller.id = meshName + "_ctrl_id";
-
-                    controller.skin.source = "#" + geometry.id;
-                    controller.skin.bind_shape_matrix.set(new RenderBase.OMatrix());
-
-                    daeSource joints = new daeSource();
-                    joints.id = meshName + "_ctrl_joint_names_id";
-                    joints.Name_array = new daeNameArray();
-                    joints.Name_array.id = meshName + "_ctrl_joint_names_array_id";
-                    joints.Name_array.count = (uint)mdl.skeleton.Count;
-                    joints.Name_array.data = jointNames;
-                    joints.technique_common.accessor.source = "#" + joints.Name_array.id;
-                    joints.technique_common.accessor.count = joints.Name_array.count;
-                    joints.technique_common.accessor.stride = 1;
-                    joints.technique_common.accessor.addParam("JOINT", "Name");
-
-                    controller.skin.src.Add(joints);
-
-                    daeSource bindPoses = new daeSource();
-                    bindPoses.id = meshName + "_ctrl_inv_bind_poses_id";
-                    bindPoses.float_array = new daeFloatArray();
-                    bindPoses.float_array.id = meshName + "_ctrl_inv_bind_poses_array_id";
-                    bindPoses.float_array.count = (uint)(mdl.skeleton.Count * 16);
-                    bindPoses.float_array.data = invBindPoses;
-                    bindPoses.technique_common.accessor.source = "#" + bindPoses.float_array.id;
-                    bindPoses.technique_common.accessor.count = (uint)mdl.skeleton.Count;
-                    bindPoses.technique_common.accessor.stride = 16;
-                    bindPoses.technique_common.accessor.addParam("TRANSFORM", "float4x4");
-
-                    controller.skin.src.Add(bindPoses);
-
-                    daeSource weights = new daeSource();
-                    weights.id = meshName + "_ctrl_weights_id";
-                    weights.float_array = new daeFloatArray();
-                    weights.float_array.id = meshName + "_ctrl_weights_array_id";
-                    weights.technique_common.accessor.source = "#" + weights.float_array.id;
-                    weights.technique_common.accessor.stride = 1;
-                    weights.technique_common.accessor.addParam("WEIGHT", "float");
-
-                    StringBuilder w = new StringBuilder();
-                    StringBuilder vcount = new StringBuilder();
-                    StringBuilder v = new StringBuilder();
-
-                    float[] wLookBack = new float[32];
-                    uint wLookBackIndex = 0;
-                    int buffLen = 0;
-
-                    int wIndex = 0;
-                    int wCount = 0;
                     foreach (RenderBase.OVertex vtx in mesh.vertices)
                     {
-                        int count = Math.Min(vtx.node.Count, vtx.weight.Count);
+                        positions.Add(vtx.position.x);
+                        positions.Add(vtx.position.y);
+                        positions.Add(vtx.position.z);
 
-                        vcount.Append(count + " ");
-                        for (int n = 0; n < count; n++)
+                        if (mesh.hasNormal)
                         {
-                            v.Append(vtx.node[n] + " ");
-                            bool found = false;
-                            uint bPos = (wLookBackIndex - 1) & 0x1f;
-                            for (int i = 0; i < buffLen; i++)
-                            {
-                                if (wLookBack[bPos] == vtx.weight[n])
-                                {
-                                    v.Append(wIndex - (i + 1) + " ");
-                                    found = true;
-                                    break;
-                                }
-                                bPos = (bPos - 1) & 0x1f;
-                            }
+                            normals.Add(vtx.normal.x);
+                            normals.Add(vtx.normal.y);
+                            normals.Add(vtx.normal.z);
+                        }
 
-                            if (!found)
-                            {
-                                v.Append(wIndex++ + " ");
-                                w.Append(vtx.weight[n].ToString(CultureInfo.InvariantCulture) + " ");
-                                wCount++;
+                        if (mesh.texUVCount > 0)
+                        {
+                            uv0.Add(vtx.texture0.x);
+                            uv0.Add(vtx.texture0.y);
+                        }
 
-                                wLookBack[wLookBackIndex] = vtx.weight[n];
-                                wLookBackIndex = (wLookBackIndex + 1) & 0x1f;
-                                if (buffLen < wLookBack.Length) buffLen++;
-                            }
+                        if (mesh.texUVCount > 1)
+                        {
+                            uv1.Add(vtx.texture1.x);
+                            uv1.Add(vtx.texture1.y);
+                        }
+
+                        if (mesh.texUVCount > 2)
+                        {
+                            uv2.Add(vtx.texture2.x);
+                            uv2.Add(vtx.texture2.y);
+                        }
+
+                        if (mesh.hasColor)
+                        {
+                            colors.Add(((vtx.diffuseColor >> 16) & 0xff) / 255f);
+                            colors.Add(((vtx.diffuseColor >> 8) & 0xff) / 255f);
+                            colors.Add((vtx.diffuseColor & 0xff) / 255f);
+                            colors.Add(((vtx.diffuseColor >> 24) & 0xff) / 255f);
                         }
                     }
 
-                    weights.float_array.data = w.ToString().TrimEnd();
-                    weights.float_array.count = (uint)wCount;
-                    weights.technique_common.accessor.count = (uint)wCount;
+                    daeSource position = new daeSource();
+                    position.name = meshName + "_position";
+                    position.id = position.name + "_id";
+                    position.float_array = new daeFloatArray();
+                    position.float_array.id = position.name + "_array_id";
+                    position.float_array.set(positions);
+                    position.technique_common.accessor.source = "#" + position.float_array.id;
+                    position.technique_common.accessor.count = (uint)mesh.vertices.Count;
+                    position.technique_common.accessor.stride = 3;
+                    position.technique_common.accessor.addParam("X", "float");
+                    position.technique_common.accessor.addParam("Y", "float");
+                    position.technique_common.accessor.addParam("Z", "float");
 
-                    controller.skin.src.Add(weights);
-                    controller.skin.vertex_weights.vcount = vcount.ToString().TrimEnd();
-                    controller.skin.vertex_weights.v = v.ToString().TrimEnd();
-                    controller.skin.vertex_weights.count = (uint)mesh.vertices.Count;
-                    controller.skin.joints.addInput("JOINT", "#" + joints.id);
-                    controller.skin.joints.addInput("INV_BIND_MATRIX", "#" + bindPoses.id);
+                    geometry.mesh.source.Add(position);
 
-                    controller.skin.vertex_weights.addInput("JOINT", "#" + joints.id);
-                    controller.skin.vertex_weights.addInput("WEIGHT", "#" + weights.id, 1);
+                    daeSource normal = new daeSource();
+                    if (mesh.hasNormal)
+                    {
+                        normal.name = meshName + "_normal";
+                        normal.id = normal.name + "_id";
+                        normal.float_array = new daeFloatArray();
+                        normal.float_array.id = normal.name + "_array_id";
+                        normal.float_array.set(normals);
+                        normal.technique_common.accessor.source = "#" + normal.float_array.id;
+                        normal.technique_common.accessor.count = (uint)mesh.vertices.Count;
+                        normal.technique_common.accessor.stride = 3;
+                        normal.technique_common.accessor.addParam("X", "float");
+                        normal.technique_common.accessor.addParam("Y", "float");
+                        normal.technique_common.accessor.addParam("Z", "float");
 
-                    if (daeShiny.library_controllers == null) daeShiny.library_controllers = new List<daeController>();
-                    daeShiny.library_controllers.Add(controller);
+                        geometry.mesh.source.Add(normal);
+                    }
+
+                    daeSource[] texUV = new daeSource[3];
+                    for (int i = 0; i < mesh.texUVCount; i++)
+                    {
+                        texUV[i] = new daeSource();
+
+                        texUV[i].name = meshName + "_uv" + i;
+                        texUV[i].id = texUV[i].name + "_id";
+                        texUV[i].float_array = new daeFloatArray();
+                        texUV[i].float_array.id = texUV[i].name + "_array_id";
+                        texUV[i].technique_common.accessor.source = "#" + texUV[i].float_array.id;
+                        texUV[i].technique_common.accessor.count = (uint)mesh.vertices.Count;
+                        texUV[i].technique_common.accessor.stride = 2;
+                        texUV[i].technique_common.accessor.addParam("S", "float");
+                        texUV[i].technique_common.accessor.addParam("T", "float");
+
+                        geometry.mesh.source.Add(texUV[i]);
+                    }
+
+                    daeSource color = new daeSource();
+                    if (mesh.hasColor)
+                    {
+                        color.name = meshName + "_color";
+                        color.id = color.name + "_id";
+                        color.float_array = new daeFloatArray();
+                        color.float_array.id = color.name + "_array_id";
+                        color.float_array.set(colors);
+                        color.technique_common.accessor.source = "#" + color.float_array.id;
+                        color.technique_common.accessor.count = (uint)mesh.vertices.Count;
+                        color.technique_common.accessor.stride = 4;
+                        color.technique_common.accessor.addParam("R", "float");
+                        color.technique_common.accessor.addParam("G", "float");
+                        color.technique_common.accessor.addParam("B", "float");
+                        color.technique_common.accessor.addParam("A", "float");
+
+                        geometry.mesh.source.Add(color);
+                    }
+
+                    geometry.mesh.vertices.id = meshName + "_vertices_id";
+                    geometry.mesh.vertices.addInput("POSITION", "#" + position.id);
+
+                    geometry.mesh.triangles.material = mdl.material[obj.materialId].name + "_mat";
+                    geometry.mesh.triangles.addInput("VERTEX", "#" + geometry.mesh.vertices.id);
+                    if (mesh.hasNormal) geometry.mesh.triangles.addInput("NORMAL", "#" + normal.id);
+                    if (mesh.hasColor) geometry.mesh.triangles.addInput("COLOR", "#" + color.id);
+                    if (mesh.texUVCount > 0)
+                    {
+                        texUV[0].float_array.set(uv0);
+                        geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[0].id);
+                    }
+                    if (mesh.texUVCount > 1)
+                    {
+                        texUV[1].float_array.set(uv1);
+                        geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[1].id, 0, 1);
+                    }
+                    if (mesh.texUVCount > 2)
+                    {
+                        texUV[2].float_array.set(uv2);
+                        geometry.mesh.triangles.addInput("TEXCOORD", "#" + texUV[2].id, 0, 2);
+                    }
+                    geometry.mesh.triangles.set(mesh.indices);
+
+                    daeShiny.library_geometries.Add(geometry);
+
+                    bool hasNode = obj.vertices[0].node.Count > 0;
+                    bool hasWeight = obj.vertices[0].weight.Count > 0;
+                    bool hasController = hasNode && hasWeight;
+
+                    //Controller
+                    daeController controller = new daeController();
+                    if (hasController)
+                    {
+                        controller.id = meshName + "_ctrl_id";
+
+                        controller.skin.source = "#" + geometry.id;
+                        controller.skin.bind_shape_matrix.set(new RenderBase.OMatrix());
+
+                        daeSource joints = new daeSource();
+                        joints.id = meshName + "_ctrl_joint_names_id";
+                        joints.Name_array = new daeNameArray();
+                        joints.Name_array.id = meshName + "_ctrl_joint_names_array_id";
+                        joints.Name_array.count = (uint)mdl.skeleton.Count;
+                        joints.Name_array.data = jointNames;
+                        joints.technique_common.accessor.source = "#" + joints.Name_array.id;
+                        joints.technique_common.accessor.count = joints.Name_array.count;
+                        joints.technique_common.accessor.stride = 1;
+                        joints.technique_common.accessor.addParam("JOINT", "Name");
+
+                        controller.skin.src.Add(joints);
+
+                        daeSource bindPoses = new daeSource();
+                        bindPoses.id = meshName + "_ctrl_inv_bind_poses_id";
+                        bindPoses.float_array = new daeFloatArray();
+                        bindPoses.float_array.id = meshName + "_ctrl_inv_bind_poses_array_id";
+                        bindPoses.float_array.count = (uint)(mdl.skeleton.Count * 16);
+                        bindPoses.float_array.data = invBindPoses;
+                        bindPoses.technique_common.accessor.source = "#" + bindPoses.float_array.id;
+                        bindPoses.technique_common.accessor.count = (uint)mdl.skeleton.Count;
+                        bindPoses.technique_common.accessor.stride = 16;
+                        bindPoses.technique_common.accessor.addParam("TRANSFORM", "float4x4");
+
+                        controller.skin.src.Add(bindPoses);
+
+                        daeSource weights = new daeSource();
+                        weights.id = meshName + "_ctrl_weights_id";
+                        weights.float_array = new daeFloatArray();
+                        weights.float_array.id = meshName + "_ctrl_weights_array_id";
+                        weights.technique_common.accessor.source = "#" + weights.float_array.id;
+                        weights.technique_common.accessor.stride = 1;
+                        weights.technique_common.accessor.addParam("WEIGHT", "float");
+
+                        StringBuilder w = new StringBuilder();
+                        StringBuilder vcount = new StringBuilder();
+                        StringBuilder v = new StringBuilder();
+
+                        float[] wLookBack = new float[32];
+                        uint wLookBackIndex = 0;
+                        int buffLen = 0;
+
+                        int wIndex = 0;
+                        int wCount = 0;
+                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        {
+                            int count = Math.Min(vtx.node.Count, vtx.weight.Count);
+
+                            vcount.Append(count + " ");
+                            for (int n = 0; n < count; n++)
+                            {
+                                v.Append(vtx.node[n] + " ");
+                                bool found = false;
+                                uint bPos = (wLookBackIndex - 1) & 0x1f;
+                                for (int i = 0; i < buffLen; i++)
+                                {
+                                    if (wLookBack[bPos] == vtx.weight[n])
+                                    {
+                                        v.Append(wIndex - (i + 1) + " ");
+                                        found = true;
+                                        break;
+                                    }
+                                    bPos = (bPos - 1) & 0x1f;
+                                }
+
+                                if (!found)
+                                {
+                                    v.Append(wIndex++ + " ");
+                                    w.Append(vtx.weight[n].ToString(CultureInfo.InvariantCulture) + " ");
+                                    wCount++;
+
+                                    wLookBack[wLookBackIndex] = vtx.weight[n];
+                                    wLookBackIndex = (wLookBackIndex + 1) & 0x1f;
+                                    if (buffLen < wLookBack.Length) buffLen++;
+                                }
+                            }
+                        }
+
+                        weights.float_array.data = w.ToString().TrimEnd();
+                        weights.float_array.count = (uint)wCount;
+                        weights.technique_common.accessor.count = (uint)wCount;
+
+                        controller.skin.src.Add(weights);
+                        controller.skin.vertex_weights.vcount = vcount.ToString().TrimEnd();
+                        controller.skin.vertex_weights.v = v.ToString().TrimEnd();
+                        controller.skin.vertex_weights.count = (uint)mesh.vertices.Count;
+                        controller.skin.joints.addInput("JOINT", "#" + joints.id);
+                        controller.skin.joints.addInput("INV_BIND_MATRIX", "#" + bindPoses.id);
+
+                        controller.skin.vertex_weights.addInput("JOINT", "#" + joints.id);
+                        controller.skin.vertex_weights.addInput("WEIGHT", "#" + weights.id, 1);
+
+                        if (daeShiny.library_controllers == null) daeShiny.library_controllers = new List<daeController>();
+                        daeShiny.library_controllers.Add(controller);
+                    }
+
+                    //Visual scene node
+                    daeNode node = new daeNode();
+                    node.name = "vsn_" + meshName;
+                    node.id = node.name + "_id";
+                    node.matrix.set(new RenderBase.OMatrix());
+                    if (hasController)
+                    {
+                        node.instance_controller = new daeInstanceController();
+                        node.instance_controller.url = "#" + controller.id;
+                        node.instance_controller.skeleton = "#" + mdl.skeleton[0].name + "_bone_id";
+                        node.instance_controller.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_mat";
+                        node.instance_controller.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_mat_id";
+                    }
+                    else
+                    {
+                        node.instance_geometry = new daeInstanceGeometry();
+                        node.instance_geometry.url = "#" + geometry.id;
+                        node.instance_geometry.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_mat";
+                        node.instance_geometry.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_mat_id";
+                    }
+
+                    vs.node.Add(node);
                 }
+                daeShiny.library_visual_scenes.Add(vs);
 
-                //Visual scene node
-                daeNode node = new daeNode();
-                node.name = "vsn_" + meshName;
-                node.id = node.name + "_id";
-                node.matrix.set(new RenderBase.OMatrix());
-                if (hasController)
+                scene = new daeInstaceVisualScene();
+                scene.url = "#" + vs.id;
+                daeShiny.scene.Add(scene);
+
+                settings = new XmlWriterSettings
                 {
-                    node.instance_controller = new daeInstanceController();
-                    node.instance_controller.url = "#" + controller.id;
-                    node.instance_controller.skeleton = "#" + mdl.skeleton[0].name + "_bone_id";
-                    node.instance_controller.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_mat";
-                    node.instance_controller.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_mat_id";
-                }
-                else
-                {
-                    node.instance_geometry = new daeInstanceGeometry();
-                    node.instance_geometry.url = "#" + geometry.id;
-                    node.instance_geometry.bind_material.technique_common.instance_material.symbol = mdl.material[obj.materialId].name + "_mat";
-                    node.instance_geometry.bind_material.technique_common.instance_material.target = "#" + mdl.material[obj.materialId].name + "_mat_id";
-                }
+                    Encoding = Encoding.UTF8,
+                    Indent = true
+                };
 
-                vs.node.Add(node);
+                ns = new XmlSerializerNamespaces();
+                ns.Add("", "http://www.collada.org/2005/11/COLLADASchema");
+                serializer = new XmlSerializer(typeof(COLLADA));
+                output = XmlWriter.Create(new FileStream(fileName.Replace(".bch", "_Shiny.dae").Replace("BCH", "DAE"), FileMode.Create), settings);
+                serializer.Serialize(output, dae, ns);
+                output.Close();
             }
-            daeShiny.library_visual_scenes.Add(vs);
-
-            scene = new daeInstaceVisualScene();
-            scene.url = "#" + vs.id;
-            daeShiny.scene.Add(scene);
-
-            settings = new XmlWriterSettings
-            {
-                Encoding = Encoding.UTF8,
-                Indent = true
-            };
-
-            ns = new XmlSerializerNamespaces();
-            ns.Add("", "http://www.collada.org/2005/11/COLLADASchema");
-            serializer = new XmlSerializer(typeof(COLLADA));
-            output = XmlWriter.Create(new FileStream(fileName.Replace(".bch", "_Shiny.dae").Replace("BCH", "DAE"), FileMode.Create), settings);
-            serializer.Serialize(output, dae, ns);
-            output.Close();
-
-			}
             #endregion
         }
 

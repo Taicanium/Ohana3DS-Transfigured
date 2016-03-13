@@ -56,6 +56,22 @@ namespace Ohana3DS_Transfigured
 
             MenuViewShowSidebar.Checked = Settings.Default.viewShowSidebar;
             MenuViewWireframeMode.Checked = Settings.Default.reWireframeMode;
+
+            if (hasFileToOpen)
+            {
+                RenderBase.OModelGroup group = PC.load(fileToOpen);
+                group.model[0].name = Path.GetFileNameWithoutExtension(fileToOpen);
+
+                object[] arguments = { 0, 0, Path.Combine(Path.GetDirectoryName(fileToOpen), Path.GetFileNameWithoutExtension(fileToOpen)) };
+
+                FileIO.export(FileIO.fileType.model, group, arguments);
+
+                file.data = null;
+
+                Close();
+
+                Application.Exit();
+            }
         }
 
         public void setFileToOpen(string fileName)
