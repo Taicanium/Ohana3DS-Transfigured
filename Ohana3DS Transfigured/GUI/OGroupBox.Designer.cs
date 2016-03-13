@@ -47,7 +47,7 @@
             // BtnToggle
             // 
             this.BtnToggle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BtnToggle.BackColor = System.Drawing.Color.Transparent;
+            this.BtnToggle.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnToggle.Image = global::Ohana3DS_Transfigured.Properties.Resources.ui_icon_minus;
             this.BtnToggle.Location = new System.Drawing.Point(234, 2);
             this.BtnToggle.Name = "BtnToggle";
@@ -61,7 +61,7 @@
             // LblTitle
             // 
             this.LblTitle.AutoSize = true;
-            this.LblTitle.BackColor = System.Drawing.Color.Transparent;
+            this.LblTitle.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblTitle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblTitle.ForeColor = System.Drawing.Color.White;
             this.LblTitle.Location = new System.Drawing.Point(2, 5);

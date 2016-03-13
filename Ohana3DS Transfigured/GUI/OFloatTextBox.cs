@@ -30,7 +30,7 @@ namespace Ohana3DS_Transfigured.GUI
             {
                 base.BackColor = value;
 
-                if (value != Color.Transparent)
+                if (value != Color.FromArgb(0, 0, 0, 0))
                     TextBox.BackColor = value;
                 else
                     TextBox.BackColor = Color.Black;

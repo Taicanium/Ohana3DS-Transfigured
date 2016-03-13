@@ -63,7 +63,7 @@
             // 
             // SeekBar
             // 
-            this.SeekBar.BackColor = System.Drawing.Color.Transparent;
+            this.SeekBar.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.SeekBar.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SeekBar.Location = new System.Drawing.Point(64, 0);
             this.SeekBar.Margin = new System.Windows.Forms.Padding(0);

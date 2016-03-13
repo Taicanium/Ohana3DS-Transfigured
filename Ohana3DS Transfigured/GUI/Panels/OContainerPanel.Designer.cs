@@ -52,7 +52,7 @@
             // 
             // BtnExport
             // 
-            this.BtnExport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExport.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnExport.Centered = true;
             this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -67,7 +67,7 @@
             // 
             // BtnExportAll
             // 
-            this.BtnExportAll.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExportAll.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnExportAll.Centered = true;
             this.BtnExportAll.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExportAll.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -82,7 +82,7 @@
             // 
             // FileList
             // 
-            this.FileList.BackColor = System.Drawing.Color.Transparent;
+            this.FileList.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.FileList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.FileList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FileList.HeaderHeight = 24;

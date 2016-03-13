@@ -58,7 +58,7 @@
             // 
             // BtnDelete
             // 
-            this.BtnDelete.BackColor = System.Drawing.Color.Transparent;
+            this.BtnDelete.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnDelete.Centered = true;
             this.BtnDelete.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnDelete.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -73,7 +73,7 @@
             // 
             // BtnClear
             // 
-            this.BtnClear.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClear.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnClear.Centered = true;
             this.BtnClear.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnClear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -88,7 +88,7 @@
             // 
             // BtnExport
             // 
-            this.BtnExport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnExport.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnExport.Centered = true;
             this.BtnExport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnExport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -103,7 +103,7 @@
             // 
             // BtnImport
             // 
-            this.BtnImport.BackColor = System.Drawing.Color.Transparent;
+            this.BtnImport.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnImport.Centered = true;
             this.BtnImport.Dock = System.Windows.Forms.DockStyle.Fill;
             this.BtnImport.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -118,7 +118,7 @@
             // 
             // ModelList
             // 
-            this.ModelList.BackColor = System.Drawing.Color.Transparent;
+            this.ModelList.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.ModelList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ModelList.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ModelList.HeaderHeight = 24;

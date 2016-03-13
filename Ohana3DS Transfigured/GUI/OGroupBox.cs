@@ -176,7 +176,7 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void BtnToggle_MouseLeave(object sender, EventArgs e)
         {
-            BtnToggle.BackColor = Color.Transparent;
+            BtnToggle.BackColor = Color.FromArgb(0, 0, 0, 0);
         }
 
         private void BtnToggle_MouseDown(object sender, MouseEventArgs e)

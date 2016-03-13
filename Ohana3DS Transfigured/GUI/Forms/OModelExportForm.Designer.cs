@@ -83,7 +83,7 @@
             // LblDummyOutFolder
             // 
             this.LblDummyOutFolder.AutomaticSize = true;
-            this.LblDummyOutFolder.BackColor = System.Drawing.Color.Transparent;
+            this.LblDummyOutFolder.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblDummyOutFolder.Centered = false;
             this.LblDummyOutFolder.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDummyOutFolder.Location = new System.Drawing.Point(11, 26);
@@ -116,7 +116,7 @@
             // LblDummyModelName
             // 
             this.LblDummyModelName.AutomaticSize = true;
-            this.LblDummyModelName.BackColor = System.Drawing.Color.Transparent;
+            this.LblDummyModelName.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblDummyModelName.Centered = false;
             this.LblDummyModelName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDummyModelName.Location = new System.Drawing.Point(11, 75);
@@ -139,7 +139,7 @@
             // LblDummyFormat
             // 
             this.LblDummyFormat.AutomaticSize = true;
-            this.LblDummyFormat.BackColor = System.Drawing.Color.Transparent;
+            this.LblDummyFormat.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblDummyFormat.Centered = false;
             this.LblDummyFormat.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDummyFormat.Location = new System.Drawing.Point(11, 124);
@@ -203,7 +203,7 @@
             // ChkExportAllModels
             // 
             this.ChkExportAllModels.AutomaticSize = true;
-            this.ChkExportAllModels.BackColor = System.Drawing.Color.Transparent;
+            this.ChkExportAllModels.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.ChkExportAllModels.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllModels.Checked = false;
             this.ChkExportAllModels.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -217,7 +217,7 @@
             // ChkExportAllAnimations
             // 
             this.ChkExportAllAnimations.AutomaticSize = true;
-            this.ChkExportAllAnimations.BackColor = System.Drawing.Color.Transparent;
+            this.ChkExportAllAnimations.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.ChkExportAllAnimations.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllAnimations.Checked = false;
             this.ChkExportAllAnimations.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));

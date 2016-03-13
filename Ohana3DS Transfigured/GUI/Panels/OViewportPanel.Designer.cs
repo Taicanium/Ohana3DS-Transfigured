@@ -79,7 +79,7 @@
             // 
             // Splitter.Panel1
             // 
-            this.Splitter.Panel1.BackColor = System.Drawing.Color.Transparent;
+            this.Splitter.Panel1.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.Splitter.Panel1.Controls.Add(this.VisibilityAnimationsGroup);
             this.Splitter.Panel1.Controls.Add(this.MaterialAnimationsGroup);
             this.Splitter.Panel1.Controls.Add(this.SkeletalAnimationsGroup);
@@ -121,7 +121,7 @@
             // 
             // VisibilityAnimationsPanel
             // 
-            this.VisibilityAnimationsPanel.BackColor = System.Drawing.Color.Transparent;
+            this.VisibilityAnimationsPanel.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.VisibilityAnimationsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.VisibilityAnimationsPanel.ForeColor = System.Drawing.Color.White;
             this.VisibilityAnimationsPanel.Location = new System.Drawing.Point(0, 0);
@@ -156,7 +156,7 @@
             // 
             // MaterialAnimationsPanel
             // 
-            this.MaterialAnimationsPanel.BackColor = System.Drawing.Color.Transparent;
+            this.MaterialAnimationsPanel.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.MaterialAnimationsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MaterialAnimationsPanel.ForeColor = System.Drawing.Color.White;
             this.MaterialAnimationsPanel.Location = new System.Drawing.Point(0, 0);
@@ -191,7 +191,7 @@
             // 
             // SkeletalAnimationsPanel
             // 
-            this.SkeletalAnimationsPanel.BackColor = System.Drawing.Color.Transparent;
+            this.SkeletalAnimationsPanel.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.SkeletalAnimationsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SkeletalAnimationsPanel.ForeColor = System.Drawing.Color.White;
             this.SkeletalAnimationsPanel.Location = new System.Drawing.Point(0, 0);
@@ -271,7 +271,7 @@
             // 
             // OViewportPanel
             // 
-            this.BackColor = System.Drawing.Color.Transparent;
+            this.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.Controls.Add(this.Splitter);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "OViewportPanel";

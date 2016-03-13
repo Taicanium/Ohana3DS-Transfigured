@@ -96,7 +96,7 @@ namespace Ohana3DS_Transfigured.GUI
 
         private void Control_MouseLeave(object sender, EventArgs e)
         {
-            ((Control)sender).BackColor = Color.Transparent;
+            ((Control)sender).BackColor = Color.FromArgb(0, 0, 0, 0);
         }
 
         private void BtnPlayPause_MouseDown(object sender, MouseEventArgs e)

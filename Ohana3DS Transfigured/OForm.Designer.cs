@@ -90,7 +90,7 @@
             // 
             // BtnMinimize
             // 
-            this.BtnMinimize.BackColor = System.Drawing.Color.Transparent;
+            this.BtnMinimize.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnMinimize.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnMinimize.Image = global::Ohana3DS_Transfigured.Properties.Resources.ui_icon_minimize;
             this.BtnMinimize.Location = new System.Drawing.Point(592, 0);
@@ -104,7 +104,7 @@
             // 
             // BtnMinMax
             // 
-            this.BtnMinMax.BackColor = System.Drawing.Color.Transparent;
+            this.BtnMinMax.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnMinMax.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnMinMax.Image = global::Ohana3DS_Transfigured.Properties.Resources.ui_icon_maximize;
             this.BtnMinMax.Location = new System.Drawing.Point(608, 0);
@@ -118,7 +118,7 @@
             // 
             // BtnClose
             // 
-            this.BtnClose.BackColor = System.Drawing.Color.Transparent;
+            this.BtnClose.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.BtnClose.Dock = System.Windows.Forms.DockStyle.Right;
             this.BtnClose.Image = global::Ohana3DS_Transfigured.Properties.Resources.ui_icon_close;
             this.BtnClose.Location = new System.Drawing.Point(624, 0);

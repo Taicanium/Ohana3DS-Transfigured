@@ -73,7 +73,7 @@
             // LblA
             // 
             this.LblA.AutomaticSize = false;
-            this.LblA.BackColor = System.Drawing.Color.Transparent;
+            this.LblA.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblA.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LblA.Location = new System.Drawing.Point(16, 66);
             this.LblA.Margin = new System.Windows.Forms.Padding(0);
@@ -85,7 +85,7 @@
             // LblB
             // 
             this.LblB.AutomaticSize = false;
-            this.LblB.BackColor = System.Drawing.Color.Transparent;
+            this.LblB.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblB.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LblB.Location = new System.Drawing.Point(16, 44);
             this.LblB.Margin = new System.Windows.Forms.Padding(0);
@@ -97,7 +97,7 @@
             // LblG
             // 
             this.LblG.AutomaticSize = false;
-            this.LblG.BackColor = System.Drawing.Color.Transparent;
+            this.LblG.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblG.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LblG.Location = new System.Drawing.Point(16, 22);
             this.LblG.Margin = new System.Windows.Forms.Padding(0);
@@ -120,7 +120,7 @@
             // 
             // SelectedColor
             // 
-            this.SelectedColor.BackColor = System.Drawing.Color.Transparent;
+            this.SelectedColor.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.SelectedColor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SelectedColor.Location = new System.Drawing.Point(0, 0);
             this.SelectedColor.Margin = new System.Windows.Forms.Padding(0);
@@ -132,7 +132,7 @@
             // LblR
             // 
             this.LblR.AutomaticSize = false;
-            this.LblR.BackColor = System.Drawing.Color.Transparent;
+            this.LblR.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblR.Dock = System.Windows.Forms.DockStyle.Fill;
             this.LblR.Location = new System.Drawing.Point(16, 0);
             this.LblR.Margin = new System.Windows.Forms.Padding(0);

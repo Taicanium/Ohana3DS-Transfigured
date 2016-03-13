@@ -87,7 +87,7 @@
             // ChkExportAllTextures
             // 
             this.ChkExportAllTextures.AutomaticSize = true;
-            this.ChkExportAllTextures.BackColor = System.Drawing.Color.Transparent;
+            this.ChkExportAllTextures.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.ChkExportAllTextures.BoxColor = System.Drawing.Color.Black;
             this.ChkExportAllTextures.Checked = false;
             this.ChkExportAllTextures.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -112,7 +112,7 @@
             // LblDummyTextureName
             // 
             this.LblDummyTextureName.AutomaticSize = true;
-            this.LblDummyTextureName.BackColor = System.Drawing.Color.Transparent;
+            this.LblDummyTextureName.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblDummyTextureName.Centered = false;
             this.LblDummyTextureName.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDummyTextureName.Location = new System.Drawing.Point(11, 75);
@@ -145,7 +145,7 @@
             // LblDummyOutFolder
             // 
             this.LblDummyOutFolder.AutomaticSize = true;
-            this.LblDummyOutFolder.BackColor = System.Drawing.Color.Transparent;
+            this.LblDummyOutFolder.BackColor = System.Drawing.Color.FromArgb(0, 0, 0, 0);
             this.LblDummyOutFolder.Centered = false;
             this.LblDummyOutFolder.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.LblDummyOutFolder.Location = new System.Drawing.Point(11, 26);
