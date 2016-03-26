@@ -687,169 +687,106 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                     {
                                         if (norFile.Contains("Xtra") == false && norFile.Contains("EyeNor"))
                                         {
-                                            if (eyeBMP.Width == eyeBMP.Height)
+                                            Bitmap thisEye = new Bitmap(eyeBMP.Width / 2, eyeBMP.Height / 4);
+                                            Bitmap norBMP = (Bitmap)Bitmap.FromFile(norFile);
+                                            Bitmap thisNor = new Bitmap(norBMP.Width / 4, norBMP.Height / 4);
+                                            Bitmap finalBMP = new Bitmap(eyeBMP.Width * 2, eyeBMP.Height);
+
+                                            int eye = 0;
+                                            int half = 0;
+                                            bool reflectEye = false;
+                                            bool reflectIris = true;
+                                            bool reflectNor = true;
+
+                                            for (int eyeY = 0; eyeY < 4; eyeY++)
                                             {
-                                                Bitmap norBMP = (Bitmap)Bitmap.FromFile(norFile);
-                                                Bitmap thisNor = new Bitmap(norBMP.Width / 4, norBMP.Height / 4);
-                                                Bitmap thisEye = new Bitmap(eyeBMP.Width / 2, eyeBMP.Height / 4);
-                                                Bitmap irisBMP = new Bitmap(norBMP.Width / 4, norBMP.Height / 4);
-                                                Bitmap finalBMP = new Bitmap(norBMP.Width, norBMP.Height);
+                                                eye = 0;
 
-                                                int currentEye = 0;
-
-                                                for (int eyeX = 0; eyeX < 4; eyeX++)
+                                                for (int eyeX = 0; eyeX < 2; eyeX++)
                                                 {
-                                                    for (int eyeY = 0; eyeY < 4; eyeY++)
+                                                    reflectEye = !reflectEye;
+                                                    reflectNor = !reflectNor;
+                                                    reflectIris = !reflectIris;
+
+                                                    for (half = 0; half < 2; half++)
                                                     {
-                                                        for (int x = eyeX * thisNor.Width; x < (eyeX + 1) * thisNor.Width; x++)
+                                                        for (int x = half * (eyeBMP.Width / 2); x < (half + 1) * (eyeBMP.Width / 2); x++)
                                                         {
-                                                            for (int y = eyeY * thisNor.Height; y < (eyeY + 1) * thisNor.Height; y++)
+                                                            for (int y = eyeY * (eyeBMP.Height / 4); y < (eyeY + 1) * (eyeBMP.Height / 4); y++)
                                                             {
-                                                                thisNor.SetPixel(x - (eyeX * thisNor.Width), y - (eyeY * thisNor.Height), norBMP.GetPixel(x, y));
+                                                                thisEye.SetPixel(x - (half * (eyeBMP.Width / 2)), y - (eyeY * (eyeBMP.Height / 4)), eyeBMP.GetPixel(x, y));
                                                             }
                                                         }
 
-                                                        for (int x = currentEye * thisEye.Width; x < (currentEye + 1) * thisEye.Width; x++)
+                                                        for (int x = (half * 2) * (norBMP.Width / 4); x < ((half * 2) + 1) * (norBMP.Width / 4); x++)
                                                         {
-                                                            for (int y = eyeY * thisEye.Height; y < (eyeY + 1) * thisEye.Height; y++)
+                                                            for (int y = eyeY * (norBMP.Height / 4); y < (eyeY + 1) * (norBMP.Height / 4); y++)
                                                             {
-                                                                thisEye.SetPixel(x - (currentEye * thisEye.Width), y - (eyeY * thisEye.Height), eyeBMP.GetPixel(x, y));
+                                                                thisNor.SetPixel(x - ((half * 2) * (norBMP.Width / 4)), y - (eyeY * (norBMP.Height / 4)), norBMP.GetPixel(x, y));
                                                             }
                                                         }
 
-                                                        for (int x = 0; x < thisNor.Width; x++)
-                                                        {
-                                                            for (int y = 0; y < thisNor.Height; y++)
-                                                            {
-                                                                if (thisNor.GetPixel(x, y).A == 0x00)
-                                                                {
-                                                                    irisBMP.SetPixel(x, y, thisEye.GetPixel(x, y));
-                                                                }
-                                                                else
-                                                                {
-                                                                    irisBMP.SetPixel(x, y, tempBMP.GetPixel(x, y));
-                                                                }
-                                                            }
-                                                        }
-
-                                                        for (int x = 0; x < irisBMP.Width; x++)
-                                                        {
-                                                            for (int y = 0; y < irisBMP.Height; y++)
-                                                            {
-                                                                if (irisBMP.GetPixel(x, y).A == 0x00)
-                                                                {
-                                                                    irisBMP.SetPixel(x, y, Color.White);
-                                                                }
-                                                            }
-                                                        }
-
-                                                        for (int x = eyeX * thisNor.Width; x < (eyeX + 1) * thisNor.Width; x++)
-                                                        {
-                                                            for (int y = eyeY * thisNor.Width; y < (eyeY + 1) * thisNor.Width; y++)
-                                                            {
-                                                                finalBMP.SetPixel(x, y, irisBMP.GetPixel(x - (eyeX * thisNor.Width), y - (eyeY * thisNor.Height)));
-                                                            }
-                                                        }
-                                                    }
-
-                                                    if (eyeX % 2 != 0)
-                                                    {
-                                                        currentEye++;
-                                                    }
-                                                }
-
-                                                finalBMP.Save(texFile.Replace("Textures", "Models/DAE"));
-                                                model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE")));
-                                            }
-                                            else
-                                            {
-                                                Bitmap norBMP = (Bitmap)Bitmap.FromFile(norFile);
-                                                Bitmap thisNor = new Bitmap(norBMP.Width / 4, norBMP.Height / 4);
-                                                Bitmap thisEye = new Bitmap(eyeBMP.Width / 2, eyeBMP.Height / 4);
-                                                Bitmap irisBMP = new Bitmap(norBMP.Width / 4, norBMP.Height / 4);
-                                                Bitmap finalBMP = new Bitmap(norBMP.Width, norBMP.Height);
-
-                                                int currentEye = 0;
-
-                                                for (int eyeX = 0; eyeX < 4; eyeX++)
-                                                {
-                                                    if (eyeX == 0)
-                                                    {
-                                                        tempBMP.RotateFlip(RotateFlipType.RotateNoneFlipX);
-                                                    }
-
-                                                    tempBMP.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                                                    for (int eyeY = 0; eyeY < 4; eyeY++)
-                                                    {
-                                                        for (int x = eyeX * thisNor.Width; x < (eyeX + 1) * thisNor.Width; x++)
-                                                        {
-                                                            for (int y = eyeY * thisNor.Height; y < (eyeY + 1) * thisNor.Height; y++)
-                                                            {
-                                                                thisNor.SetPixel(x - (eyeX * thisNor.Width), y - (eyeY * thisNor.Height), norBMP.GetPixel(x, y));
-                                                            }
-                                                        }
-
-                                                        for (int x = currentEye * thisEye.Width; x < (currentEye + 1) * thisEye.Width; x++)
-                                                        {
-                                                            for (int y = eyeY * thisEye.Height; y < (eyeY + 1) * thisEye.Height; y++)
-                                                            {
-                                                                thisEye.SetPixel(x - (currentEye * thisEye.Width), y - (eyeY * thisEye.Height), eyeBMP.GetPixel(x, y));
-                                                            }
-                                                        }
-
-                                                        if (eyeX % 3 /* Don't ask. */ == 0)
+                                                        if (reflectEye == true)
                                                         {
                                                             thisEye.RotateFlip(RotateFlipType.RotateNoneFlipX);
                                                         }
 
-                                                        for (int x = 0; x < thisNor.Width; x++)
+                                                        reflectEye = !reflectEye;
+
+                                                        if (reflectNor == true)
                                                         {
-                                                            for (int y = 0; y < thisNor.Height; y++)
+                                                            thisNor.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                                                        }
+
+                                                        if (reflectIris == true)
+                                                        {
+                                                            tempBMP.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                                                            reflectIris = false;
+                                                        }
+
+                                                        // By now, tempBMP, thisEye, and thisNor should all be the same size.
+
+                                                        for (int x = 0; x < tempBMP.Width; x++)
+                                                        {
+                                                            for (int y = 0; y < tempBMP.Height; y++)
                                                             {
-                                                                if (thisNor.GetPixel(x, y).A == 0x00)
+                                                                if (tempBMP.GetPixel(x, y).A >= 0x7F && thisNor.GetPixel(x, y).A >= 0x7F)
                                                                 {
-                                                                    irisBMP.SetPixel(x, y, thisEye.GetPixel(x, y));
-                                                                }
-                                                                else
-                                                                {
-                                                                    irisBMP.SetPixel(x, y, tempBMP.GetPixel(x, y));
+                                                                    thisEye.SetPixel(x, y, tempBMP.GetPixel(x, y));
                                                                 }
                                                             }
                                                         }
 
-                                                        for (int x = 0; x < irisBMP.Width; x++)
+                                                        for (int x = eye * (norBMP.Width / 4); x < (eye + 1) * (norBMP.Width / 4); x++)
                                                         {
-                                                            for (int y = 0; y < irisBMP.Height; y++)
+                                                            for (int y = eyeY * (norBMP.Height / 4); y < (eyeY + 1) * (norBMP.Height / 4); y++)
                                                             {
-                                                                if (irisBMP.GetPixel(x, y).A == 0x00)
-                                                                {
-                                                                    irisBMP.SetPixel(x, y, Color.White);
-                                                                }
+                                                                finalBMP.SetPixel(x, y, thisEye.GetPixel(x - (eye * (norBMP.Width / 4)), y - (eyeY * (norBMP.Height / 4))));
                                                             }
                                                         }
 
-                                                        // Because 3DS Max is picky about how to align UVs.
-                                                        irisBMP.RotateFlip(RotateFlipType.RotateNoneFlipX);
-
-                                                        for (int x = eyeX * thisNor.Width; x < (eyeX + 1) * thisNor.Width; x++)
+                                                        if (eye == 3)
                                                         {
-                                                            for (int y = eyeY * thisNor.Width; y < (eyeY + 1) * thisNor.Width; y++)
-                                                            {
-                                                                finalBMP.SetPixel(x, y, irisBMP.GetPixel(x - (eyeX * thisNor.Width), y - (eyeY * thisNor.Height)));
-                                                            }
+                                                            eye--;
                                                         }
-                                                    }
-
-                                                    if (eyeX % 2 != 0)
-                                                    {
-                                                        currentEye++;
+                                                        else if (eye == 1)
+                                                        {
+                                                            eye += 2;
+                                                        }
+                                                        else if (eye == 0)
+                                                        {
+                                                            eye++;
+                                                        }
+                                                        else if (eye == 2)
+                                                        {
+                                                            eye -= 2;
+                                                        }
                                                     }
                                                 }
-
-                                                finalBMP.Save(texFile.Replace("Textures", "Models/DAE"));
-                                                model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE")));
                                             }
+
+                                            finalBMP.Save(texFile.Replace("Textures", "Models/DAE"));
+                                            model.texture.Add(new RenderBase.OTexture(finalBMP, texFile.Replace("Textures", "Models/DAE")));
                                         }
                                     }
                                 }
