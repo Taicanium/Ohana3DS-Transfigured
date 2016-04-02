@@ -909,7 +909,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                                     foreach (string bodyFile in texFiles)
                                     {
-                                        if (bodyFile.Contains("BodyA1") && bodyFile.Contains("Nor") == false)
+                                        if ((bodyFile.Contains("Body1") || bodyFile.Contains("BodyA1")) && bodyFile.Contains("Nor") == false)
                                         {
                                             Bitmap bodyBMP = (Bitmap)Bitmap.FromFile(bodyFile);
 
