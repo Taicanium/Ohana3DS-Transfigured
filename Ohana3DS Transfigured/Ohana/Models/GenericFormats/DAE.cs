@@ -604,8 +604,8 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
             daeShiny.asset.created = DateTime.Now.ToString("yyyy-MM-ddThh:mm:ssZ");
             daeShiny.asset.modified = dae.asset.created;
-			
-			bool hasShiny = false;
+
+            bool hasShiny = false;
 
             // Attempt to detect packaged textures. See http://www.github.com/Quibilia/Ohana3DS-Transfigured for directions.
             try
@@ -945,7 +945,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                                                 freqs[colors.IndexOf(c)] = freq;
                                                             }
                                                         }
-                                                        
+
                                                         if (matchFound == false)
                                                         {
                                                             colors.Add(Color.FromArgb(r, g, b));
@@ -981,7 +981,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                                             bool lfbcgray = false;
                                             bool bothgray = false;
                                             bool neithergray = false;
-                                            
+
                                             if (MFBC.R > (MFBC.G - tolerance) && MFBC.R < (MFBC.G + tolerance))
                                             {
                                                 if (MFBC.B > (MFBC.G - tolerance) && MFBC.B < (MFBC.G + tolerance))
@@ -1096,8 +1096,8 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 {
                     img.id += "_shiny";
                     img.name += "_shiny";
-					
-					hasShiny = true;
+
+                    hasShiny = true;
                 }
 
                 img.id += "_id";
@@ -1263,11 +1263,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
             vs.id = vs.name + "_id";
             if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
 
-            bool mirrorIrisUVs = true;
-            bool mirrorEyeUVs = true;
+            bool rightIris = false;
 
             foreach (RenderBase.OMesh obj in mdl.mesh)
             {
+                float largestUV = 0.0f;
+
                 //Geometry
                 daeGeometry geometry = new daeGeometry();
 
@@ -1285,53 +1286,81 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                 if (obj.name.Contains("Iris"))
                 {
-                    if (mirrorIrisUVs == true)
+                    foreach (RenderBase.OVertex vtx in mesh.vertices)
                     {
-                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        if (mesh.texUVCount > 0)
                         {
-                            if (mesh.texUVCount > 0)
+                            if (vtx.texture0.x > largestUV)
                             {
-                                vtx.texture0.x = 1.0f - vtx.texture0.x;
-                            }
-
-                            if (mesh.texUVCount > 1)
-                            {
-                                vtx.texture1.x = 1.0f - vtx.texture1.x;
-                            }
-
-                            if (mesh.texUVCount > 2)
-                            {
-                                vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                largestUV = vtx.texture0.x;
                             }
                         }
                     }
 
-                    mirrorIrisUVs = !mirrorIrisUVs;
+                    foreach (RenderBase.OVertex vtx in mesh.vertices)
+                    {
+                        if (mesh.texUVCount > 0)
+                        {
+                            vtx.texture0.x = largestUV - vtx.texture0.x;
+
+                            if (rightIris)
+                            {
+                                vtx.texture0.x = 1.25f - vtx.texture0.x;
+                            }
+                        }
+
+                        if (mesh.texUVCount > 1)
+                        {
+                            vtx.texture1.x = largestUV - vtx.texture1.x;
+
+                            if (rightIris)
+                            {
+                                vtx.texture1.x = 1.25f - vtx.texture1.x;
+                            }
+                        }
+
+                        if (mesh.texUVCount > 2)
+                        {
+                            vtx.texture2.x = largestUV - vtx.texture2.x;
+
+                            if (rightIris)
+                            {
+                                vtx.texture2.x = 1.25f - vtx.texture2.x;
+                            }
+                        }
+                    }
+
+                    rightIris = !rightIris;
                 }
                 else if (obj.name.Contains("Eye"))
                 {
-                    if (mirrorEyeUVs == true)
+                    foreach (RenderBase.OVertex vtx in mesh.vertices)
                     {
-                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        if (mesh.texUVCount > 0)
                         {
-                            if (mesh.texUVCount > 0)
+                            if (vtx.texture0.x > largestUV)
                             {
-                                vtx.texture0.x = 1.0f - vtx.texture0.x;
-                            }
-
-                            if (mesh.texUVCount > 1)
-                            {
-                                vtx.texture1.x = 1.0f - vtx.texture1.x;
-                            }
-
-                            if (mesh.texUVCount > 2)
-                            {
-                                vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                largestUV = vtx.texture0.x;
                             }
                         }
                     }
+                    foreach (RenderBase.OVertex vtx in mesh.vertices)
+                    {
+                        if (mesh.texUVCount > 0)
+                        {
+                            vtx.texture0.x = largestUV - vtx.texture0.x;
+                        }
 
-                    mirrorEyeUVs = !mirrorEyeUVs;
+                        if (mesh.texUVCount > 1)
+                        {
+                            vtx.texture1.x = largestUV - vtx.texture1.x;
+                        }
+
+                        if (mesh.texUVCount > 2)
+                        {
+                            vtx.texture2.x = largestUV - vtx.texture2.x;
+                        }
+                    }
                 }
 
                 foreach (RenderBase.OVertex vtx in mesh.vertices)
@@ -1782,11 +1811,12 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
                 vs.id = vs.name + "_id";
                 if (mdl.skeleton.Count > 0) writeSkeleton(mdl.skeleton, 0, ref vs.node);
 
-                mirrorIrisUVs = true;
-                mirrorEyeUVs = true;
+                rightIris = false;
 
                 foreach (RenderBase.OMesh obj in mdl.mesh)
                 {
+                    float largestUV = 0.0f;
+
                     //Geometry
                     daeGeometry geometry = new daeGeometry();
 
@@ -1804,53 +1834,82 @@ namespace Ohana3DS_Transfigured.Ohana.Models.GenericFormats
 
                     if (obj.name.Contains("Iris"))
                     {
-                        if (mirrorIrisUVs == true)
+                        foreach (RenderBase.OVertex vtx in mesh.vertices)
                         {
-                            foreach (RenderBase.OVertex vtx in mesh.vertices)
+                            if (mesh.texUVCount > 0)
                             {
-                                if (mesh.texUVCount > 0)
+                                if (vtx.texture0.x > largestUV)
                                 {
-                                    vtx.texture0.x = 1.0f - vtx.texture0.x;
-                                }
-
-                                if (mesh.texUVCount > 1)
-                                {
-                                    vtx.texture1.x = 1.0f - vtx.texture1.x;
-                                }
-
-                                if (mesh.texUVCount > 2)
-                                {
-                                    vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                    largestUV = vtx.texture0.x;
                                 }
                             }
                         }
 
-                        mirrorIrisUVs = !mirrorIrisUVs;
+                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        {
+                            if (mesh.texUVCount > 0)
+                            {
+                                vtx.texture0.x = largestUV - vtx.texture0.x;
+
+                                if (rightIris)
+                                {
+                                    vtx.texture0.x = 1.25f - vtx.texture0.x;
+                                }
+                            }
+
+                            if (mesh.texUVCount > 1)
+                            {
+                                vtx.texture1.x = largestUV - vtx.texture1.x;
+
+                                if (rightIris)
+                                {
+                                    vtx.texture1.x = 1.25f - vtx.texture1.x;
+                                }
+                            }
+
+                            if (mesh.texUVCount > 2)
+                            {
+                                vtx.texture2.x = largestUV - vtx.texture2.x;
+
+                                if (rightIris)
+                                {
+                                    vtx.texture2.x = 1.25f - vtx.texture2.x;
+                                }
+                            }
+                        }
+
+                        rightIris = !rightIris;
                     }
                     else if (obj.name.Contains("Eye"))
                     {
-                        if (mirrorEyeUVs == true)
+                        foreach (RenderBase.OVertex vtx in mesh.vertices)
                         {
-                            foreach (RenderBase.OVertex vtx in mesh.vertices)
+                            if (mesh.texUVCount > 0)
                             {
-                                if (mesh.texUVCount > 0)
+                                if (vtx.texture0.x > largestUV)
                                 {
-                                    vtx.texture0.x = 1.0f - vtx.texture0.x;
-                                }
-
-                                if (mesh.texUVCount > 1)
-                                {
-                                    vtx.texture1.x = 1.0f - vtx.texture1.x;
-                                }
-
-                                if (mesh.texUVCount > 2)
-                                {
-                                    vtx.texture2.x = 1.0f - vtx.texture2.x;
+                                    largestUV = vtx.texture0.x;
                                 }
                             }
                         }
 
-                        mirrorEyeUVs = !mirrorEyeUVs;
+                        foreach (RenderBase.OVertex vtx in mesh.vertices)
+                        {
+                            if (mesh.texUVCount > 0)
+                            {
+                                vtx.texture0.x = largestUV - vtx.texture0.x;
+                            }
+
+                            if (mesh.texUVCount > 1)
+                            {
+                                vtx.texture1.x = largestUV - vtx.texture1.x;
+                            }
+
+                            if (mesh.texUVCount > 2)
+                            {
+                                vtx.texture2.x = largestUV - vtx.texture2.x;
+                            }
+                        }
                     }
 
                     foreach (RenderBase.OVertex vtx in mesh.vertices)
