@@ -257,7 +257,6 @@
     <Compile Include="Ohana\Containers\DARC.cs" />
     <Compile Include="Ohana\Containers\GARC.cs" />
     <Compile Include="Ohana\Containers\SARC.cs" />
-    <Compile Include="Ohana\Models\GenericFormats\FBX.cs" />
     <Compile Include="Ohana\Models\MeshUtils.cs" />
     <Compile Include="Ohana\Models\BCH.cs" />
     <Compile Include="Ohana\Models\CGFX.cs" />
