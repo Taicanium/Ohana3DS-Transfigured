@@ -45,8 +45,16 @@ namespace Ohana3DS_Transfigured.Ohana
         {
             switch (Path.GetExtension(fileName).ToLower())
             {
-                case ".mbn": return new file { data = MBN.load(fileName), type = formatType.model };
-                case ".xml": return new file { data = NLP.load(fileName), type = formatType.model };
+                case ".mbn": try { return new file { data = MBN.load(fileName), type = formatType.model }; }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file { data = null, type = formatType.unsupported };
+                    };
+                case ".xml": try { return new file { data = NLP.load(fileName), type = formatType.model }; }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file { data = null, type = formatType.unsupported };
+                    };
                 default: return load(new FileStream(fileName, FileMode.Open));
             }
         }
@@ -65,70 +73,122 @@ namespace Ohana3DS_Transfigured.Ohana
 
             switch (getMagic(input, 5))
             {
-                case "MODEL": return new file { data = DQVIIPack.load(data), type = formatType.container };
-            }
+                case "MODEL": try { return new file { data = DQVIIPack.load(data), type = formatType.container }; }
+                        catch (EndOfStreamException e)
+                        {
+                            return new file { data = null, type = formatType.unsupported };
+                        };
+                }
 
             switch (getMagic(input, 4))
             {
-                case "CGFX": return new file { data = CGFX.load(data), type = formatType.model };
-                case "CRAG": return new file { data = GARC.load(data), type = formatType.container };
-                case "darc": return new file { data = DARC.load(data), type = formatType.container };
-                case "FPT0": return new file { data = FPT0.load(data), type = formatType.container };
-                case "IECP":
+                case "CGFX": try { return new file { data = CGFX.load(data), type = formatType.model }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported };
+                                };
+                            case "CRAG": try { return new file { data = GARC.load(data), type = formatType.container }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported };
+                                };
+                            case "darc": try { return new file { data = DARC.load(data), type = formatType.container }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported };
+                                };
+                            case "FPT0": try { return new file { data = FPT0.load(data), type = formatType.container }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported };
+                                };
+                            case "IECP":
                     magic = input.ReadUInt32();
                     length = input.ReadUInt32();
                     return load(new MemoryStream(LZSS.decompress(data, length)));
                 case "NLK2":
-                    data.Seek(0x80, SeekOrigin.Begin);
-                    return new file
+                    data.Seek(0x80, SeekOrigin.Begin); try {  return new file
                     {
                         data = CGFX.load(data),
                         type = formatType.model
                     };
-                case "SARC": return new file { data = SARC.load(data), type = formatType.container };
-                case "SMES": return new file { data = NLP.loadMesh(data), type = formatType.model };
+                    }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file { data = null, type = formatType.unsupported };
+                    };
+                case "SARC": try { return new file { data = SARC.load(data), type = formatType.container }; }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file { data = null, type = formatType.unsupported };
+                    };
+                case "SMES": try { return new file { data = NLP.loadMesh(data), type = formatType.model }; }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file { data = null, type = formatType.unsupported };
+                    };
                 case "Yaz0":
                     magic = input.ReadUInt32();
                     length = IOUtils.endianSwap(input.ReadUInt32());
                     data.Seek(8, SeekOrigin.Current);
                     return load(new MemoryStream(Yaz0.decompress(data, length)));
-                case "zmdl": return new file { data = ZMDL.load(data), type = formatType.model };
-                case "ztex": return new file { data = ZTEX.load(data), type = formatType.texture };
-            }
+                case "zmdl": try { return new file { data = ZMDL.load(data), type = formatType.model }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported }; };
+                case "ztex": try { return new file { data = ZTEX.load(data), type = formatType.texture }; }
+                                catch (EndOfStreamException e)
+                                {
+                                    return new file { data = null, type = formatType.unsupported }; };
+                                }
 
             //Check if is a BCLIM or BFLIM file (header on the end)
             if (data.Length > 0x28)
             {
                 data.Seek(-0x28, SeekOrigin.End);
                 string clim = IOUtils.readStringWithLength(input, 4);
-                if (clim == "CLIM" || clim == "FLIM") return new file { data = BCLIM.load(data), type = formatType.image };
-            }
+                if (clim == "CLIM" || clim == "FLIM") try { return new file { data = BCLIM.load(data), type = formatType.image }; }
+                                        catch (EndOfStreamException e)
+                                        {
+                                            return new file { data = null, type = formatType.unsupported }; };
+                                        }
 
             switch (getMagic(input, 3))
             {
                 case "BCH":
-                    byte[] buffer = new byte[data.Length];
-                    input.Read(buffer, 0, buffer.Length);
-                    data.Close();
-                    return new file
+                    try
                     {
-                        data = BCH.load(new MemoryStream(buffer)),
-                        type = formatType.model
-                    };
-                case "DMP": return new file { data = DMP.load(data), type = formatType.image };
+                        byte[] buffer = new byte[data.Length];
+                        input.Read(buffer, 0, buffer.Length);
+                        data.Close();
+                        return new file
+                        {
+                            data = BCH.load(new MemoryStream(buffer)),
+                            type = formatType.model
+                        };
+                    }
+                    catch (EndOfStreamException e)
+                    {
+                        return new file
+                        {
+                            data = null,
+                            type = formatType.unsupported
+                        };
+                    }
+                case "DMP": try { return new file { data = DMP.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
             }
 
             switch (getMagic(input, 2))
             {
-                case "AD": return new file { data = AD.load(data), type = formatType.model };
-                case "BM": return new file { data = MM.load(data), type = formatType.model };
-                case "GR": return new file { data = GR.load(data), type = formatType.model };
-                case "MM": return new file { data = MM.load(data), type = formatType.model };
-                case "PC": return new file { data = PC.load(data), type = formatType.model };
-                case "PT": return new file { data = PT.load(data), type = formatType.texture };
-                case "PK": return new file { data = PK.load(data), type = formatType.animation };
-                case "PB": return new file { data = PB.load(data), type = formatType.animation };
-                case "PF": return new file { data = PF.load(data), type = formatType.animation };
+                case "AD": try { return new file { data = AD.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "BM": try { return new file { data = MM.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "GR": try { return new file { data = GR.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "MM": try { return new file { data = MM.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "PC": try { return new file { data = PC.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "PT": try { return new file { data = PT.load(data), type = formatType.texture }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "PK": try { return new file { data = PK.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "PB": try { return new file { data = PB.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "PF": try { return new file { data = PF.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
             }
 
             //Compressions
