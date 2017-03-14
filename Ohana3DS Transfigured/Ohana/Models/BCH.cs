@@ -1795,7 +1795,7 @@ namespace Ohana3DS_Transfigured.Ohana.Models
 
                             bBox.size = new RenderBase.OVector3(input.ReadSingle(), input.ReadSingle(), input.ReadSingle());
 
-                            obj.boundingBox.Add(bBox);
+                            obj.boundingBox = bBox;
                         }
                     }
     

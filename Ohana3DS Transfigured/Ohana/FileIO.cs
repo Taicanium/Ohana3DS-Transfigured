@@ -351,11 +351,11 @@ namespace Ohana3DS_Transfigured.Ohana
                 switch (type)
                 {
                     case fileType.model:
-                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                         exportMdl.Show();
                         break;
                     case fileType.texture:
-                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
                         exportTex.Show();
                         break;
                     case fileType.skeletalAnimation:
@@ -366,7 +366,7 @@ namespace Ohana3DS_Transfigured.Ohana
                             switch (saveDlg.FilterIndex)
                             {
                                 case 1:
-                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
+                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], (int)arguments[1]);
                                     break;
                             }
                         }
