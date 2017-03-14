@@ -249,6 +249,8 @@
     <Compile Include="OForm.Designer.cs">
       <DependentUpon>OForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Ohana\Animations\BS.cs" />
+    <Compile Include="Ohana\Animations\GfMotion.cs" />
     <Compile Include="Ohana\Animations\PB.cs" />
     <Compile Include="Ohana\Animations\PF.cs" />
     <Compile Include="Ohana\Animations\PK.cs" />
@@ -273,6 +275,10 @@
     <Compile Include="Ohana\Models\NewLovePlus\Model.cs" />
     <Compile Include="Ohana\Models\NewLovePlus\Serialization.cs" />
     <Compile Include="Ohana\Models\NLP.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\CM.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\CP.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\GfModel.cs" />
+    <Compile Include="Ohana\Models\PocketMonsters\GfTexture.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\GR.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\MM.cs" />
     <Compile Include="Ohana\Models\PocketMonsters\PC.cs" />
@@ -291,6 +297,7 @@
     <Compile Include="Ohana\RenderEngine.cs" />
     <Compile Include="Ohana\TextureCodec.cs" />
     <Compile Include="Ohana\Textures\PocketMonsters\AD.cs" />
+    <Compile Include="Ohana\Textures\PocketMonsters\GfTexture.cs" />
     <Compile Include="Ohana\Textures\PocketMonsters\PT.cs" />
     <Compile Include="Ohana\TextureUtils.cs" />
     <Compile Include="Ohana\Models\ZMDL.cs" />

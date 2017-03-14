@@ -13,24 +13,23 @@ using Ohana3DS_Transfigured.Ohana.Textures.PocketMonsters;
 using Ohana3DS_Transfigured.Ohana.Compressions;
 using Ohana3DS_Transfigured.Ohana.Containers;
 using Ohana3DS_Transfigured.Ohana.Animations;
+using Ohana3DS_Transfigured.Ohana.Animations.PocketMonsters;
+using Ohana3DS_Rebirth.Ohana.Models.PocketMonsters;
 
 namespace Ohana3DS_Transfigured.Ohana
 {
     public class FileIO
     {
-        static RenderBase.OAnimationListBase output;
-        static List<RenderBase.OModel> omodelOutput;
-        static List<RenderBase.OTexture> otexOutput;
-
         [Flags]
         public enum formatType : uint
         {
             unsupported = 0,
-            compression = 1,
-            container = 2,
-            image = 4,
-            model = 8,
-            texture = 0x10,
+            compression = 1 << 0,
+            container = 1 << 1,
+            image = 1 << 2,
+            model = 1 << 3,
+            texture = 1 << 4,
+            anims = 1 << 5,
             animation = 0x20,
             all = 0xffffffff
         }
@@ -45,16 +44,8 @@ namespace Ohana3DS_Transfigured.Ohana
         {
             switch (Path.GetExtension(fileName).ToLower())
             {
-                case ".mbn": try { return new file { data = MBN.load(fileName), type = formatType.model }; }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file { data = null, type = formatType.unsupported };
-                    };
-                case ".xml": try { return new file { data = NLP.load(fileName), type = formatType.model }; }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file { data = null, type = formatType.unsupported };
-                    };
+                case ".mbn": return new file { data = MBN.load(fileName), type = formatType.model };
+                case ".xml": return new file { data = NLP.load(fileName), type = formatType.model };
                 default: return load(new FileStream(fileName, FileMode.Open));
             }
         }
@@ -71,124 +62,94 @@ namespace Ohana3DS_Transfigured.Ohana
             BinaryReader input = new BinaryReader(data);
             uint magic, length;
 
+            switch (peek(input))
+            {
+                case 0x00010000: return new file { data = GfModel.load(data), type = formatType.model };
+                case 0x00060000: return new file { data = GfMotion.loadAnim(input), type = formatType.anims };
+                case 0x15041213: return new file { data = GfTexture.load(data), type = formatType.image };
+                case 0x15122117:
+                    RenderBase.OModelGroup mdls = new RenderBase.OModelGroup();
+                    mdls.model.Add(GfModel.loadModel(data));
+                    return new file { data = mdls, type = formatType.model };
+            }
+
             switch (getMagic(input, 5))
             {
-                case "MODEL": try { return new file { data = DQVIIPack.load(data), type = formatType.container }; }
-                        catch (EndOfStreamException e)
-                        {
-                            return new file { data = null, type = formatType.unsupported };
-                        };
-                }
+                case "MODEL": return new file { data = DQVIIPack.load(data), type = formatType.container };
+            }
 
             switch (getMagic(input, 4))
             {
-                case "CGFX": try { return new file { data = CGFX.load(data), type = formatType.model }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported };
-                                };
-                            case "CRAG": try { return new file { data = GARC.load(data), type = formatType.container }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported };
-                                };
-                            case "darc": try { return new file { data = DARC.load(data), type = formatType.container }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported };
-                                };
-                            case "FPT0": try { return new file { data = FPT0.load(data), type = formatType.container }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported };
-                                };
-                            case "IECP":
+                case "CGFX": return new file { data = CGFX.load(data), type = formatType.model };
+                case "CRAG": return new file { data = GARC.load(data), type = formatType.container };
+                case "darc": return new file { data = DARC.load(data), type = formatType.container };
+                case "FPT0": return new file { data = FPT0.load(data), type = formatType.container };
+                case "IECP":
                     magic = input.ReadUInt32();
                     length = input.ReadUInt32();
                     return load(new MemoryStream(LZSS.decompress(data, length)));
                 case "NLK2":
-                    data.Seek(0x80, SeekOrigin.Begin); try {  return new file
+                    data.Seek(0x80, SeekOrigin.Begin);
+                    return new file
                     {
                         data = CGFX.load(data),
                         type = formatType.model
                     };
-                    }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file { data = null, type = formatType.unsupported };
-                    };
-                case "SARC": try { return new file { data = SARC.load(data), type = formatType.container }; }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file { data = null, type = formatType.unsupported };
-                    };
-                case "SMES": try { return new file { data = NLP.loadMesh(data), type = formatType.model }; }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file { data = null, type = formatType.unsupported };
-                    };
+                case "SARC": return new file { data = SARC.load(data), type = formatType.container };
+                case "SMES": return new file { data = NLP.loadMesh(data), type = formatType.model };
                 case "Yaz0":
                     magic = input.ReadUInt32();
                     length = IOUtils.endianSwap(input.ReadUInt32());
                     data.Seek(8, SeekOrigin.Current);
                     return load(new MemoryStream(Yaz0.decompress(data, length)));
-                case "zmdl": try { return new file { data = ZMDL.load(data), type = formatType.model }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported }; };
-                case "ztex": try { return new file { data = ZTEX.load(data), type = formatType.texture }; }
-                                catch (EndOfStreamException e)
-                                {
-                                    return new file { data = null, type = formatType.unsupported }; };
-                                }
+                case "zmdl": return new file { data = ZMDL.load(data), type = formatType.model };
+                case "ztex": return new file { data = ZTEX.load(data), type = formatType.texture };
+            }
 
             //Check if is a BCLIM or BFLIM file (header on the end)
             if (data.Length > 0x28)
             {
                 data.Seek(-0x28, SeekOrigin.End);
                 string clim = IOUtils.readStringWithLength(input, 4);
-                if (clim == "CLIM" || clim == "FLIM") try { return new file { data = BCLIM.load(data), type = formatType.image }; }
-                                        catch (EndOfStreamException e)
-                                        {
-                                            return new file { data = null, type = formatType.unsupported }; };
-                                        }
+                if (clim == "CLIM" || clim == "FLIM") return new file { data = BCLIM.load(data), type = formatType.image };
+            }
 
             switch (getMagic(input, 3))
             {
                 case "BCH":
-                    try
+                    byte[] buffer = new byte[data.Length];
+                    input.Read(buffer, 0, buffer.Length);
+                    data.Close();
+                    return new file
                     {
-                        byte[] buffer = new byte[data.Length];
-                        input.Read(buffer, 0, buffer.Length);
-                        data.Close();
-                        return new file
-                        {
-                            data = BCH.load(new MemoryStream(buffer)),
-                            type = formatType.model
-                        };
-                    }
-                    catch (EndOfStreamException e)
-                    {
-                        return new file
-                        {
-                            data = null,
-                            type = formatType.unsupported
-                        };
-                    }
-                case "DMP": try { return new file { data = DMP.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                        data = BCH.load(new MemoryStream(buffer)),
+                        type = formatType.model
+                    };
+                case "DMP": return new file { data = DMP.load(data), type = formatType.image };
             }
 
-            switch (getMagic(input, 2))
+            string magic2b = getMagic(input, 2);
+
+            switch (magic2b)
             {
-                case "AD": try { return new file { data = AD.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "BM": try { return new file { data = MM.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "GR": try { return new file { data = GR.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "MM": try { return new file { data = MM.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "PC": try { return new file { data = PC.load(data), type = formatType.model }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "PT": try { return new file { data = PT.load(data), type = formatType.texture }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "PK": try { return new file { data = PK.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "PB": try { return new file { data = PB.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
-                case "PF": try { return new file { data = PF.load(data), type = formatType.animation }; } catch (EndOfStreamException e) { return new file { data = null, type = formatType.unsupported }; };
+                case "AD": return new file { data = AD.load(data), type = formatType.model };
+                case "BM": return new file { data = MM.load(data), type = formatType.model };
+                case "BS": return new file { data = BS.load(data), type = formatType.anims };
+                case "CM": return new file { data = CM.load(data), type = formatType.model };
+                case "CP": return new file { data = CP.load(data), type = formatType.model };
+                case "GR": return new file { data = GR.load(data), type = formatType.model };
+                case "MM": return new file { data = MM.load(data), type = formatType.model };
+                case "PC": return new file { data = PC.load(data), type = formatType.model };
+                case "PT": return new file { data = PT.load(data), type = formatType.texture };
+            }
+
+            if (magic2b.Length == 2)
+            {
+                if ((magic2b[0] >= 'A' && magic2b[0] <= 'Z') &&
+                    (magic2b[1] >= 'A' && magic2b[1] <= 'Z'))
+                {
+                    return new file { data = PkmnContainer.load(data), type = formatType.container };
+                }
             }
 
             //Compressions
@@ -211,7 +172,7 @@ namespace Ohana3DS_Transfigured.Ohana
 
         public static string getExtension(byte[] data, int startIndex = 0)
         {
-            if (data.Length > 3)
+            if (data.Length > 3 + startIndex)
             {
                 switch (getMagic(data, 4, startIndex))
                 {
@@ -219,7 +180,7 @@ namespace Ohana3DS_Transfigured.Ohana
                 }
             }
 
-            if (data.Length > 2)
+            if (data.Length > 2 + startIndex)
             {
                 switch (getMagic(data, 3, startIndex))
                 {
@@ -227,12 +188,15 @@ namespace Ohana3DS_Transfigured.Ohana
                 }
             }
 
-            if (data.Length > 1)
+            if (data.Length > 1 + startIndex)
             {
                 switch (getMagic(data, 2, startIndex))
                 {
                     case "AD": return ".ad";
+                    case "BG": return ".bg";
                     case "BM": return ".bm";
+                    case "BS": return ".bs";
+                    case "CM": return ".cm";
                     case "GR": return ".gr";
                     case "MM": return ".mm";
                     case "PB": return ".pb";
@@ -248,6 +212,13 @@ namespace Ohana3DS_Transfigured.Ohana
             return ".bin";
         }
 
+        private static uint peek(BinaryReader input)
+        {
+            uint value = input.ReadUInt32();
+            input.BaseStream.Seek(-4, SeekOrigin.Current);
+            return value;
+        }
+
         private static string getMagic(BinaryReader input, uint length)
         {
             string magic = IOUtils.readString(input, 0, length);
@@ -255,7 +226,7 @@ namespace Ohana3DS_Transfigured.Ohana
             return magic;
         }
 
-        private static string getMagic(byte[] data, int length, int startIndex = 0)
+        public static string getMagic(byte[] data, int length, int startIndex = 0)
         {
             return Encoding.ASCII.GetString(data, startIndex, length);
         }
@@ -290,12 +261,12 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            omodelOutput = new List<RenderBase.OModel>();
+                            List<RenderBase.OModel> output = new List<RenderBase.OModel>();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                omodelOutput.AddRange(((RenderBase.OModelGroup)load(fileName).data).model);
+                                output.AddRange(((RenderBase.OModelGroup)load(fileName).data).model);
                             }
-                            return omodelOutput;
+                            return output;
                         }
                         break;
                     case fileType.texture:
@@ -304,17 +275,18 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            otexOutput = new List<RenderBase.OTexture>();
+                            List<RenderBase.OTexture> output = new List<RenderBase.OTexture>();
                             foreach (string fileName in openDlg.FileNames)
                             {
                                 file file = load(fileName);
                                 switch (file.type)
                                 {
-                                    case formatType.model: otexOutput.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
-                                    case formatType.texture: otexOutput.AddRange((List<RenderBase.OTexture>)file.data); break;
+                                    case formatType.model: output.AddRange(((RenderBase.OModelGroup)file.data).texture); break;
+                                    case formatType.texture: output.AddRange((List<RenderBase.OTexture>)file.data); break;
+                                    case formatType.image: output.Add((RenderBase.OTexture)file.data); break;
                                 }
                             }
-                            return otexOutput;
+                            return output;
                         }
                         break;
                     case fileType.skeletalAnimation:
@@ -323,16 +295,10 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            output = new RenderBase.OAnimationListBase();
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                try
-                                {
-                                    output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).skeletalAnimation.list);
-                                }
-                                catch
-                                {
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).skeletalAnimation.list);
                             }
                             return output;
                         }
@@ -343,16 +309,10 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            output = new RenderBase.OAnimationListBase();
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                try
-                                {
-                                    output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).materialAnimation.list);
-                                }
-                                catch
-                                {
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).materialAnimation.list);
                             }
                             return output;
                         }
@@ -363,16 +323,10 @@ namespace Ohana3DS_Transfigured.Ohana
 
                         if (openDlg.ShowDialog() == DialogResult.OK)
                         {
-                            output = new RenderBase.OAnimationListBase();
+                            RenderBase.OAnimationListBase output = new RenderBase.OAnimationListBase();
                             foreach (string fileName in openDlg.FileNames)
                             {
-                                try
-                                {
-                                    output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).visibilityAnimation.list);
-                                }
-                                catch
-                                {
-                                }
+                                output.list.AddRange(((RenderBase.OModelGroup)load(fileName).data).visibilityAnimation.list);
                             }
                             return output;
                         }
@@ -392,48 +346,32 @@ namespace Ohana3DS_Transfigured.Ohana
         /// <param name="arguments">Optional arguments to be used by the exporter</param>
         public static void export(fileType type, object data, params object[] arguments)
         {
-            if (arguments.Length < 3)
+            using (SaveFileDialog saveDlg = new SaveFileDialog())
             {
-                using (SaveFileDialog saveDlg = new SaveFileDialog())
+                switch (type)
                 {
-                    switch (type)
-                    {
-                        case fileType.model:
-                            OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
-                            exportMdl.Show();
-                            break;
-                        case fileType.texture:
-                            OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, (int)arguments[0]);
-                            exportTex.Show();
-                            break;
-                        case fileType.skeletalAnimation:
-                            saveDlg.Title = "Export Skeletal Animation";
-                            saveDlg.Filter = "Source Model|*.smd|Autodesk DAE|*.dae";
-                            if (saveDlg.ShowDialog() == DialogResult.OK)
+                    case fileType.model:
+                        OModelExportForm exportMdl = new OModelExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        exportMdl.Show();
+                        break;
+                    case fileType.texture:
+                        OTextureExportForm exportTex = new OTextureExportForm((RenderBase.OModelGroup)data, arguments[0]);
+                        exportTex.Show();
+                        break;
+                    case fileType.skeletalAnimation:
+                        saveDlg.Title = "Export Skeletal Animation";
+                        saveDlg.Filter = "Source Model|*.smd";
+                        if (saveDlg.ShowDialog() == DialogResult.OK)
+                        {
+                            switch (saveDlg.FilterIndex)
                             {
-                                switch (saveDlg.FilterIndex)
-                                {
-                                    case 1:
-                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
-                                        {
-                                            SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], i);
-                                        }
-                                        break;
-                                    case 2:
-                                        for (int i = 0; i < ((RenderBase.OModelGroup)data).skeletalAnimation.list.Count; i++)
-                                        {
-                                            DAE.export((RenderBase.OModelGroup)data, saveDlg.FileName, (int)arguments[0], i);
-                                        }
-                                        break;
-                                }
+                                case 1:
+                                    SMD.export((RenderBase.OModelGroup)data, saveDlg.FileName, arguments[0], arguments[1]);
+                                    break;
                             }
-                            break;
-                    }
+                        }
+                        break;
                 }
-            }
-            else
-            {
-                DAE.export((RenderBase.OModelGroup)data, Path.GetFullPath(arguments[2].ToString() + ".bch"), (int)arguments[0]);
             }
         }
     }
