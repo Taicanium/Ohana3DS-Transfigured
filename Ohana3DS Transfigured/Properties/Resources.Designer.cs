@@ -19,7 +19,7 @@ namespace Ohana3DS_Transfigured.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,7 +70,7 @@ namespace Ohana3DS_Transfigured.Properties {
         /// *
         /// * Formulas:
         /// * - fragmentPrimaryColor = mat_emissive + mat_ambient * scene_ambient + ((for int n = 0; n &lt; numLights; n++) LUT_S[i0] * shadowMap[u, v] * (mat_ambient * light[n].ambient + mat_diffuse * light[n].diffuse * (lightDir * normalVec)))
-        /// * - fragmentSecondaryColor = ((for int n = 0; n &lt; numLights [rest of string was truncated]&quot;;.
+        /// * - fragmentSecondaryColor = ((for int n = 0; n &lt;  [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string OFragmentShader {
             get {
