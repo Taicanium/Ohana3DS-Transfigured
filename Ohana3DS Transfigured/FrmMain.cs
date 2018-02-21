@@ -369,7 +369,7 @@ namespace Ohana3DS_Transfigured
 
         private void MenuAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Ohana3DS Transfigured made by gdkchan.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Ohana3DS Rebirth made by gdkchan. Recoded into Transfigured by Quibilia.", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         #endregion
     }
