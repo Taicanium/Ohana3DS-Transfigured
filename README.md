@@ -1,5 +1,7 @@
 # Ohana3DS Transfigured
 
+ATTENTION: This project has not been touched by myself in any extensive way for an extremely long time. Most of the features and changes I implemented have since been reworked into Ohana3DS Rebirth, and as such I feel there is no need to continue the appearance of maintenance with Transfigured. I have since moved on to other projects and have no intention of returning to this one.
+
 This program is my attempt to add features and correct some issues with Ohana3DS Rebirth to fit my own needs, published here on Github to better organize the code and share these new features with my peers.
 
 Differences between Transfigured and Rebirth include:
